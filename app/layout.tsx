@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { getSession } from "@/lib/auth";
 
 const geistSans = Geist({
@@ -40,7 +39,6 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-gray-50 text-gray-900 font-sans">
         <Navbar user={user} />
         <main className="flex-1 flex flex-col">{children}</main>
-        <Footer />
       </body>
     </html>
   );

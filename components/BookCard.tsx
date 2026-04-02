@@ -49,7 +49,7 @@ export default function BookCard({
 
         {/* Book Info */}
         <div className="p-4">
-          <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">
+          <span className="text-xs font-medium text-primary uppercase tracking-wide">
             {category}
           </span>
           <h3 className="mt-1 text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
@@ -59,7 +59,7 @@ export default function BookCard({
             <p className="text-lg font-bold text-gray-900">
               {formatRupiah(price)}
             </p>
-            <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+            <div className="p-2 rounded-lg bg-primary-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
               <ShoppingCart className="h-4 w-4" />
             </div>
           </div>
