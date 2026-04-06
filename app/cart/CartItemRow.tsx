@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, Trash2, Loader2 } from "lucide-react";
+import { Minus, Plus, Trash2, Loader2 } from "@/components/icons";
 import Image from "next/image";
 import { updateCartItem, removeFromCart } from "@/lib/actions/cart";
 import { formatRupiah } from "@/lib/utils";

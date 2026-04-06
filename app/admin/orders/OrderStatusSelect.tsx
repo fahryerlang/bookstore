@@ -2,20 +2,14 @@
 
 import { updateOrderStatus } from "@/lib/actions/orders";
 import { useTransition } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/components/icons";
 
-/**
- * Props untuk komponen OrderStatusSelect.
- */
 interface OrderStatusSelectProps {
   orderId: string;
   currentStatus: string;
   statusLabels: Record<string, string>;
 }
 
-/**
- * Dropdown untuk mengubah status pesanan.
- */
 export default function OrderStatusSelect({
   orderId,
   currentStatus,
@@ -23,16 +17,13 @@ export default function OrderStatusSelect({
 }: OrderStatusSelectProps) {
   const [isPending, startTransition] = useTransition();
 
-  const statusColors: Record<string, string> = {
-    PENDING_PAYMENT: "border-yellow-300 bg-yellow-50 text-yellow-800",
-    PROCESSING: "border-blue-300 bg-blue-50 text-blue-800",
-    SHIPPED: "border-indigo-300 bg-indigo-50 text-indigo-800",
-    COMPLETED: "border-green-300 bg-green-50 text-green-800",
+  const statusConfig: Record<string, { border: string; bg: string; text: string }> = {
+    PENDING_PAYMENT: { border: "border-amber-200", bg: "bg-amber-50", text: "text-amber-700" },
+    PROCESSING: { border: "border-blue-200", bg: "bg-blue-50", text: "text-blue-700" },
+    SHIPPED: { border: "border-indigo-200", bg: "bg-indigo-50", text: "text-indigo-700" },
+    COMPLETED: { border: "border-emerald-200", bg: "bg-emerald-50", text: "text-emerald-700" },
   };
 
-  /**
-   * Menangani perubahan status pesanan.
-   */
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const newStatus = e.target.value as
       | "PENDING_PAYMENT"
@@ -46,14 +37,21 @@ export default function OrderStatusSelect({
   }
 
   if (isPending) {
-    return <Loader2 className="h-4 w-4 animate-spin text-gray-400" />;
+    return (
+      <div className="flex items-center gap-2 px-3 py-1.5">
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+        <span className="text-xs text-slate-500">Updating...</span>
+      </div>
+    );
   }
+
+  const sc = statusConfig[currentStatus];
 
   return (
     <select
       value={currentStatus}
       onChange={handleChange}
-      className={`text-xs font-medium px-2 py-1 rounded-lg border outline-none cursor-pointer ${statusColors[currentStatus]}`}
+      className={`cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-semibold outline-none transition-colors ${sc.border} ${sc.bg} ${sc.text}`}
     >
       {Object.entries(statusLabels).map(([value, label]) => (
         <option key={value} value={value}>

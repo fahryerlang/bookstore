@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { sendMessage } from "@/lib/actions/messages";
-import { Mail, Loader2, MessageSquare, Phone, MapPin } from "lucide-react";
+import { Mail, Loader2, MessageSquare, Phone, MapPin } from "@/components/icons";
 
 /**
  * Halaman formulir kontak untuk mengirim pesan ke admin.

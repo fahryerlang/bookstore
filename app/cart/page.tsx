@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { formatRupiah } from "@/lib/utils";
-import { ShoppingCart, ArrowRight } from "lucide-react";
+import { ShoppingCart, ArrowRight } from "@/components/icons";
 import Link from "next/link";
 import CartItemRow from "./CartItemRow";
 

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createOrder } from "@/lib/actions/orders";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2, MapPin } from "@/components/icons";
 
 /**
  * Formulir checkout untuk memasukkan alamat pengiriman.

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { formatRupiah } from "@/lib/utils";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "@/components/icons";
 
 /**
  * Props untuk komponen BookCard.
@@ -16,7 +16,7 @@ interface BookCardProps {
 }
 
 /**
- * Komponen kartu buku dengan styling luxury dark + gold.
+ * Komponen kartu buku dengan gaya clean white + blue accent.
  */
 export default function BookCard({
   id,
@@ -28,15 +28,15 @@ export default function BookCard({
 }: BookCardProps) {
   return (
     <Link href={`/books/${id}`} className="group">
-      <div className="bg-white border border-gray-100 overflow-hidden hover:shadow-xl hover:shadow-black/5 transition-all duration-500 group-hover:-translate-y-1">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_36px_-30px_rgba(15,23,42,0.85)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_24px_56px_-34px_rgba(15,23,42,0.7)]">
         {/* Book Image */}
-        <div className="aspect-[3/4] relative overflow-hidden bg-gray-100">
+        <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
           <Image
             src={imageUrl}
             alt={title}
             fill
             sizes="(max-width: 768px) 50vw, 20vw"
-            className="object-cover group-hover:scale-110 transition-transform duration-700"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
           {stock <= 0 && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -45,22 +45,22 @@ export default function BookCard({
               </span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </div>
 
         {/* Book Info */}
         <div className="p-4">
-          <span className="text-xs font-medium text-primary uppercase tracking-[0.15em]">
+          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
             {category}
           </span>
-          <h3 className="mt-1.5 text-sm font-bold text-dark line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+          <h3 className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-primary">
             {title}
           </h3>
           <div className="mt-3 flex items-center justify-between">
-            <p className="text-base font-bold text-dark">
+            <p className="text-base font-bold text-slate-900">
               {formatRupiah(price)}
             </p>
-            <div className="p-2 bg-primary/10 text-primary group-hover:bg-primary group-hover:text-dark transition-colors duration-300">
+            <div className="rounded-full bg-primary-50 p-2 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
               <ShoppingCart className="h-4 w-4" />
             </div>
           </div>

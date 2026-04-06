@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 
 /**
  * Proxy (middleware) untuk melindungi rute-rute yang memerlukan autentikasi.
- * - /admin/* hanya bisa diakses oleh pengguna yang sudah login.
- * - /cart, /checkout hanya bisa diakses oleh pengguna yang sudah login.
+ * - /admin/* dan /dashboard hanya bisa diakses oleh pengguna yang sudah login.
+ * - /profile, /cart, /checkout, dan /contact hanya bisa diakses oleh pengguna yang sudah login.
  *
  * Catatan: Pengecekan peran ADMIN dilakukan di level server component/action
  * karena proxy tidak bisa mengakses database secara langsung.
@@ -17,6 +17,7 @@ export function proxy(request: NextRequest) {
   const protectedRoutes = [
     "/admin",
     "/dashboard",
+    "/profile",
     "/cart",
     "/checkout",
     "/contact",

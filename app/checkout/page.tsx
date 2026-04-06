@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { formatRupiah } from "@/lib/utils";
 import { redirect } from "next/navigation";
-import { CreditCard } from "lucide-react";
+import { CreditCard } from "@/components/icons";
 import CheckoutForm from "./CheckoutForm";
 
 /**

@@ -6,645 +6,789 @@ import BookCard from "@/components/BookCard";
 import SearchBar from "@/components/SearchBar";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { redirect } from "next/navigation";
 import {
+  ArrowRight,
   BookOpen,
-  Truck,
+  Clock,
   Shield,
   Star,
-  ArrowRight,
-  Award,
-  Clock,
-  ChevronDown,
-} from "lucide-react";
+  Truck,
+  Users,
+} from "@/components/icons";
 
 interface HomePageProps {
   searchParams: Promise<{ q?: string; category?: string }>;
 }
 
+const partnerNames = [
+  "Book Club Nusantara",
+  "Baca Bareng ID",
+  "Literasi Pintar",
+  "Komunitas Penulis",
+  "Ruang Inspirasi",
+];
+
+const marqueeTopics = [
+  "Kurasi buku pilihan editor",
+  "Checkout super cepat",
+  "Komunitas pembaca aktif",
+  "Pengiriman seluruh Indonesia",
+  "Diskon mingguan spesial",
+  "Review jujur dan relevan",
+];
+
+const audienceCards = [
+  {
+    name: "Aulia Ramadhan",
+    role: "Book Curator",
+    image:
+      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=600&h=600&fit=crop",
+    text: "Menyusun daftar bacaan mingguan yang relevan dan mudah diikuti.",
+  },
+  {
+    name: "Clarisa Putri",
+    role: "Community Host",
+    image:
+      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&h=600&fit=crop",
+    text: "Memandu sesi diskusi ringan agar pengalaman membaca jadi lebih seru.",
+  },
+  {
+    name: "Satria Wicaksono",
+    role: "Review Editor",
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop",
+    text: "Merangkum insight dari buku populer dengan bahasa yang praktis.",
+  },
+  {
+    name: "Nadine Fajri",
+    role: "Podcast Producer",
+    image:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=600&fit=crop",
+    text: "Mengubah rekomendasi bacaan jadi obrolan audio yang lebih hidup.",
+  },
+];
+
+const testimonials = [
+  {
+    quote:
+      "Kurasi bukunya rapi banget. Dalam 10 menit saya langsung nemu 3 judul yang pas.",
+    name: "Rama Kusnadi",
+    role: "Content Creator",
+  },
+  {
+    quote:
+      "Desain katalognya enak dilihat, loading cepat, dan checkout juga mulus.",
+    name: "Dina Mulyani",
+    role: "Product Designer",
+  },
+  {
+    quote:
+      "Saya suka karena bisa cari berdasarkan kategori tanpa ribet. Sangat membantu.",
+    name: "Fikri Dwi",
+    role: "Mahasiswa",
+  },
+];
+
+const editorialBlocks = [
+  {
+    title: "Kurasi Tajam",
+    text: "Tim kami memilih judul berdasarkan kualitas isi dan relevansi topik.",
+  },
+  {
+    title: "Checkout Ringan",
+    text: "Alur belanja dibuat sesingkat mungkin agar kamu cepat sampai ke pembayaran.",
+  },
+  {
+    title: "Support Responsif",
+    text: "Kami siap bantu ketika kamu butuh rekomendasi atau info tambahan buku.",
+  },
+  {
+    title: "Pengiriman Cepat",
+    text: "Proses pesanan dikirim cepat dengan update status yang jelas.",
+  },
+];
+
+function formatRupiah(value: number) {
+  return `Rp ${value.toLocaleString("id-ID")}`;
+}
+
+function buildHomeHref(q?: string, categoryId?: string) {
+  const params = new URLSearchParams();
+
+  if (q) {
+    params.set("q", q);
+  }
+
+  if (categoryId) {
+    params.set("category", categoryId);
+  }
+
+  const queryString = params.toString();
+  return queryString ? `/?${queryString}` : "/";
+}
+
 export default async function HomePage({ searchParams }: HomePageProps) {
   const { q, category } = await searchParams;
+  const user = await getSession();
 
-  const [books, categories, totalBooks, totalCategories, user] =
-    await Promise.all([
-      prisma.book.findMany({
-        where: {
-          ...(q && { title: { contains: q } }),
-          ...(category && { categoryId: category }),
-        },
-        include: { category: true },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.category.findMany({
-        orderBy: { name: "asc" },
-      }),
-      prisma.book.count(),
-      prisma.category.count(),
-      getSession(),
-    ]);
+  if (user) {
+    redirect(user.role === "ADMIN" ? "/admin" : "/dashboard");
+  }
 
-  const featuredBooks = books.slice(0, 3);
+  const [books, categories, totalBooks, totalCategories] = await Promise.all([
+    prisma.book.findMany({
+      where: {
+        ...(q && { title: { contains: q } }),
+        ...(category && { categoryId: category }),
+      },
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.book.count(),
+    prisma.category.count(),
+  ]);
+
+  const trendingBooks = books.slice(0, 5);
+  const spotlightBook = books[0];
 
   return (
     <>
       <Navbar user={user} />
-      <div className="flex-1">
-        {/* ==================== HERO — Full-screen dark overlay like reference ==================== */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1920&h=1080&fit=crop"
-            alt="Perpustakaan"
-            fill
-            sizes="100vw"
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-dark/70" />
-        </div>
 
-        {/* Side vertical text — like reference */}
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 hidden xl:flex flex-col items-center gap-4 z-10">
-          <div className="w-px h-16 bg-white/30" />
-          <span className="text-white/50 text-xs uppercase tracking-[0.3em] [writing-mode:vertical-lr] rotate-180">
-            Toko Buku Online
-          </span>
-          <div className="w-px h-16 bg-white/30" />
-        </div>
+      <div className="relative flex-1 overflow-hidden bg-grid-soft bg-[radial-gradient(circle_at_top,_#edf5ff_0%,_#f8fbff_32%,_#ffffff_68%)]">
+        <div className="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl animate-drift-slow" />
+        <div className="pointer-events-none absolute -right-24 top-[34rem] h-72 w-72 rounded-full bg-sky-300/20 blur-3xl animate-drift" />
 
-        {/* Content */}
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 animate-fade-in-up">
-          {/* Stars row */}
-          <div className="flex justify-center gap-1.5 mb-6">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="h-4 w-4 text-primary fill-primary" />
-            ))}
-          </div>
+        <main className="relative mx-auto w-full max-w-7xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+          <section className="relative rounded-[30px] border border-slate-200 bg-white p-3 shadow-[0_38px_95px_-60px_rgba(15,23,42,0.75)]">
+            <div className="relative isolate overflow-hidden rounded-[24px]">
+              <Image
+                src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=1920&h=1200&fit=crop"
+                alt="Tim berdiskusi tentang buku"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover"
+              />
 
-          {/* Subtitle */}
-          <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-6">
-            Toko Buku Online Terpercaya
-          </p>
+              <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/62 to-primary/30" />
+              <div className="absolute -left-12 top-8 h-44 w-44 rounded-full bg-primary/25 blur-3xl animate-drift" />
+              <div className="absolute -right-16 bottom-2 h-56 w-56 rounded-full bg-blue-300/25 blur-3xl animate-drift-slow" />
 
-          {/* Main heading */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-            TEMUKAN BUKU
-            <br />
-            <span className="text-primary">FAVORITMU</span>
-          </h1>
-
-          {/* CTA Button */}
-          <div className="mt-10">
-            <Link
-              href="#katalog"
-              className="inline-flex items-center gap-3 border-2 border-primary text-primary uppercase tracking-[0.2em] text-sm font-semibold px-10 py-4 hover:bg-primary hover:text-dark transition-all duration-300"
-            >
-              Jelajahi Katalog
-            </Link>
-          </div>
-
-          {/* Scroll indicator */}
-          <div className="mt-16 flex flex-col items-center gap-2 animate-float">
-            <ChevronDown className="h-5 w-5 text-white/40" />
-          </div>
-        </div>
-      </section>
-
-      {/* Stats bar — positioned between hero and featured section */}
-      <div className="relative z-20 -mt-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-dark-light/95 backdrop-blur-md border border-white/10 rounded-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/10 shadow-2xl shadow-black/20">
-            <div className="px-6 py-5 text-center">
-              <p className="text-primary text-xs uppercase tracking-[0.2em] mb-1">
-                Koleksi Buku
-              </p>
-              <p className="text-white text-xl font-bold">{totalBooks}+</p>
-            </div>
-            <div className="px-6 py-5 text-center">
-              <p className="text-primary text-xs uppercase tracking-[0.2em] mb-1">
-                Kategori
-              </p>
-              <p className="text-white text-xl font-bold">
-                {totalCategories}
-              </p>
-            </div>
-            <div className="px-6 py-5 text-center">
-              <p className="text-primary text-xs uppercase tracking-[0.2em] mb-1">
-                Rating
-              </p>
-              <p className="text-white text-xl font-bold">4.9/5</p>
-            </div>
-            <Link
-              href="#katalog"
-              className="px-6 py-5 bg-primary text-dark font-bold uppercase tracking-[0.15em] text-sm hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 rounded-r-2xl sm:rounded-r-2xl rounded-b-2xl sm:rounded-bl-none lg:rounded-bl-none"
-            >
-              Lihat Katalog
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ==================== FEATURED BOOKS — Like "Rooms & Suites" section ==================== */}
-      <section className="bg-white pt-16 pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section header with ornamental style */}
-          <div className="text-center mb-16">
-            <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-4">
-              Koleksi Pilihan
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-dark tracking-tight">
-              Buku <span className="text-primary">Terpopuler</span>
-            </h2>
-            <p className="mt-4 text-gray-500 max-w-xl mx-auto leading-relaxed">
-              Jelajahi buku-buku pilihan kami yang paling diminati oleh para
-              pembaca dari berbagai genre dan topik menarik.
-            </p>
-            {/* Ornamental divider */}
-            <div className="flex items-center justify-center gap-3 mt-6">
-              <div className="w-12 h-px bg-primary/40" />
-              <div className="w-2 h-2 rotate-45 border border-primary/40" />
-              <div className="w-12 h-px bg-primary/40" />
-            </div>
-          </div>
-
-          {/* Featured books grid — 3 columns like rooms */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredBooks.map((book) => (
-              <Link
-                key={book.id}
-                href={`/books/${book.id}`}
-                className="group"
-              >
-                <div className="overflow-hidden">
-                  {/* Image */}
-                  <div className="aspect-[4/3] relative overflow-hidden">
-                    <Image
-                      src={book.imageUrl}
-                      alt={book.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-dark/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative grid min-h-[500px] gap-8 p-6 sm:p-10 lg:grid-cols-[1.03fr_0.97fr] lg:p-12">
+                <div className="flex flex-col justify-between">
+                  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/35 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white backdrop-blur-sm">
+                    Premium Reading Hub
                   </div>
 
-                  {/* Info */}
-                  <div className="pt-5">
-                    <p className="text-primary text-xs uppercase tracking-[0.2em] font-medium">
-                      {book.category.name}
+                  <div className="max-w-3xl animate-fade-in-up">
+                    <p className="mb-5 text-xs uppercase tracking-[0.34em] text-blue-100 sm:text-sm">
+                      Curated For Focused Readers
                     </p>
-                    <h3 className="mt-2 text-xl font-bold text-dark group-hover:text-primary transition-colors">
-                      {book.title}
-                    </h3>
-                    <div className="flex items-center gap-4 mt-3">
-                      <p className="text-gray-500 text-sm">
-                        Rp {book.price.toLocaleString("id-ID")}
-                      </p>
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-3 w-3 text-primary fill-primary"
-                          />
-                        ))}
+                    <h1 className="text-[clamp(2.2rem,6vw,5.15rem)] font-black leading-[0.95] tracking-[-0.045em] text-white">
+                      Bacaan Kelas Atas,
+                      <span className="block text-blue-200">Insight Lebih Tajam.</span>
+                    </h1>
+                    <p className="mt-5 max-w-xl text-sm leading-relaxed text-slate-100 sm:text-base">
+                      Jelajahi katalog buku yang disusun dengan ritme visual bersih,
+                      rekomendasi berkualitas, dan pengalaman belanja yang gesit dari
+                      halaman pertama hingga checkout.
+                    </p>
+
+                    <div className="mt-8 flex flex-wrap gap-3">
+                      <Link
+                        href="#katalog"
+                        className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-primary-dark"
+                      >
+                        Jelajahi Katalog
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                      <Link
+                        href="/about"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 px-6 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-white/20"
+                      >
+                        Tentang Kami
+                      </Link>
+                    </div>
+
+                    <div className="mt-8 grid grid-cols-3 gap-3 text-white/95 sm:max-w-lg">
+                      <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-sm">
+                        <p className="text-lg font-bold leading-none">{totalBooks}+</p>
+                        <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/75">
+                          Active Titles
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-sm">
+                        <p className="text-lg font-bold leading-none">4.9</p>
+                        <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/75">
+                          User Rating
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-sm">
+                        <p className="text-lg font-bold leading-none">{totalCategories}</p>
+                        <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/75">
+                          Categories
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ==================== ABOUT — Split layout like reference ==================== */}
-      <section className="bg-[#f5f0e8] py-24 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Left — Image grid like reference */}
-            <div className="relative animate-fade-in-up">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div className="aspect-[3/4] relative overflow-hidden">
-                    <Image
-                      src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=500&fit=crop"
-                      alt="Koleksi buku"
-                      fill
-                      sizes="300px"
-                      className="object-cover"
-                    />
+                <div className="hidden lg:flex flex-col justify-end gap-4 animate-fade-in-right">
+                  <div className="rounded-2xl border border-white/20 bg-white/15 p-5 backdrop-blur-md">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">
+                      Live Spotlight
+                    </p>
+                    <p className="mt-2 text-lg font-semibold leading-tight text-white">
+                      {spotlightBook?.title ?? "Buku unggulan minggu ini"}
+                    </p>
+                    <p className="mt-3 text-sm font-semibold text-blue-200">
+                      {spotlightBook ? formatRupiah(spotlightBook.price) : "Rp 0"}
+                    </p>
                   </div>
-                  <div className="aspect-square relative overflow-hidden">
-                    <Image
-                      src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=400&fit=crop"
-                      alt="Membaca buku"
-                      fill
-                      sizes="300px"
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-                <div className="pt-8 space-y-4">
-                  <div className="aspect-square relative overflow-hidden">
-                    <Image
-                      src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=400&fit=crop"
-                      alt="Rak buku"
-                      fill
-                      sizes="300px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="aspect-[3/4] relative overflow-hidden">
-                    <Image
-                      src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400&h=500&fit=crop"
-                      alt="Perpustakaan"
-                      fill
-                      sizes="300px"
-                      className="object-cover"
-                    />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+                      <p className="text-2xl font-black text-white">17.5M+</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/70">
+                        Monthly reach
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+                      <p className="text-2xl font-black text-white">1.5K+</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/70">
+                        Curators
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right — Text content */}
-            <div className="animate-fade-in-right">
-              <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-4">
-                Tentang BookStore
-              </p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-dark leading-tight">
-                TOKO BUKU ONLINE
-                <br />
-                <span className="text-primary">TERPERCAYA</span>
-              </h2>
-              <p className="mt-6 text-gray-600 leading-relaxed">
-                BookStore hadir sebagai solusi belanja buku online terlengkap di
-                Indonesia. Kami menyediakan koleksi buku dari berbagai kategori
-                mulai dari fiksi, non-fiksi, teknologi, sejarah, hingga sains.
-                Setiap buku yang kami jual dijamin 100% original dan
-                berkualitas tinggi.
-              </p>
+            <div className="mt-3 grid gap-3 rounded-2xl bg-slate-950 p-4 text-white sm:grid-cols-3">
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/30">
+                  <Truck className="h-4 w-4 text-blue-100" />
+                </div>
+                <p className="text-sm font-semibold">Pengiriman Seluruh Indonesia</p>
+                <p className="mt-1 text-xs text-slate-300">
+                  Estimasi cepat dengan status pengiriman transparan.
+                </p>
+              </div>
 
-              {/* Stats row — like reference */}
-              <div className="mt-10 flex gap-12">
-                <div>
-                  <p className="text-5xl font-bold text-dark">{totalBooks}+</p>
-                  <div className="w-8 h-0.5 bg-primary mt-3 mb-2" />
-                  <p className="text-sm text-gray-500 uppercase tracking-wider">
-                    Judul Buku
-                  </p>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/30">
+                  <Shield className="h-4 w-4 text-blue-100" />
                 </div>
-                <div>
-                  <p className="text-5xl font-bold text-dark">4.9</p>
-                  <div className="w-8 h-0.5 bg-primary mt-3 mb-2" />
-                  <p className="text-sm text-gray-500 uppercase tracking-wider">
-                    Rating Pembeli
-                  </p>
+                <p className="text-sm font-semibold">Transaksi Aman</p>
+                <p className="mt-1 text-xs text-slate-300">
+                  Pembayaran terenkripsi dan checkout dibuat ringkas.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/30">
+                  <Clock className="h-4 w-4 text-blue-100" />
                 </div>
+                <p className="text-sm font-semibold">Kurasi Update Harian</p>
+                <p className="mt-1 text-xs text-slate-300">
+                  Rekomendasi baru setiap hari berdasarkan topik populer.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-6 overflow-hidden rounded-2xl border border-primary/20 bg-primary-50 py-3">
+            <div className="flex w-max items-center gap-3 whitespace-nowrap px-4 animate-marquee">
+              {[...marqueeTopics, ...marqueeTopics].map((topic, index) => (
+                <span
+                  key={`${topic}-${index}`}
+                  className="rounded-full border border-primary/20 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-900"
+                >
+                  {topic}
+                </span>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-3xl border border-slate-200 bg-white px-5 py-6 sm:px-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Dipercaya Komunitas Literasi
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {partnerNames.map((partner) => (
+                <div
+                  key={partner}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm font-semibold text-slate-600"
+                >
+                  {partner}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-14">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+                  Trending Shelves
+                </p>
+                <h2 className="mt-2 text-[clamp(1.9rem,4.4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
+                  Rilisan yang Lagi Dicari
+                </h2>
+              </div>
+
+              <Link
+                href="#katalog"
+                className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-primary transition hover:text-primary-dark"
+              >
+                Lihat Semua
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {trendingBooks.length === 0 ? (
+              <div className="rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center">
+                <BookOpen className="mx-auto h-14 w-14 text-slate-300" />
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">
+                  Belum ada buku tersedia
+                </h3>
+                <p className="mt-2 text-sm text-slate-500">
+                  Tambahkan data buku terlebih dahulu untuk menampilkan konten.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                {trendingBooks.map((book) => (
+                  <Link
+                    key={book.id}
+                    href={`/books/${book.id}`}
+                    className="group rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_45px_-40px_rgba(15,23,42,0.8)] transition hover:-translate-y-1 hover:shadow-[0_28px_56px_-38px_rgba(15,23,42,0.6)]"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
+                      <Image
+                        src={book.imageUrl}
+                        alt={book.title}
+                        fill
+                        sizes="(max-width: 1024px) 50vw, 20vw"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+
+                    <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary">
+                      {book.category.name}
+                    </p>
+                    <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-slate-900">
+                      {book.title}
+                    </h3>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-sm font-bold text-slate-900">
+                        {formatRupiah(book.price)}
+                      </span>
+                      <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-900">
+                        Stock {book.stock}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="mt-14 rounded-3xl border border-blue-100 bg-gradient-to-br from-primary-50 via-white to-white p-6 sm:p-8 lg:p-10">
+            <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                  Epic Headlines
+                </p>
+                <h2 className="mt-3 text-[clamp(1.9rem,4.4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
+                  Konten Berkualitas,
+                  <br />
+                  Selalu Fresh dan Relevan.
+                </h2>
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+                  Kami menggabungkan kurasi editor, data tren pembaca, dan
+                  pengalaman belanja yang sederhana. Hasilnya: kamu lebih cepat
+                  menemukan buku yang benar-benar kamu butuhkan.
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-8">
+                  <div>
+                    <p className="text-4xl font-semibold text-slate-900">
+                      {totalBooks}+
+                    </p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                      Judul Aktif
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-4xl font-semibold text-slate-900">4.9</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                      Rating Pengguna
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-4xl font-semibold text-slate-900">
+                      {totalCategories}
+                    </p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                      Kategori Bacaan
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link
+                    href="#katalog"
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-primary-dark"
+                  >
+                    Mulai Pilih Buku
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary hover:text-primary"
+                  >
+                    Hubungi Tim
+                  </Link>
+                </div>
+
+                <div className="mt-8 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
+                  {partnerNames.map((partner) => (
+                    <span
+                      key={partner}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1"
+                    >
+                      {partner}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+                <div className="relative min-h-[300px] overflow-hidden rounded-2xl bg-slate-200">
+                  <Image
+                    src={
+                      spotlightBook?.imageUrl ??
+                      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=900&fit=crop"
+                    }
+                    alt={spotlightBook?.title ?? "Rekomendasi buku unggulan"}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <div className="rounded-2xl border border-blue-100 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                      Spotlight
+                    </p>
+                    <h3 className="mt-2 text-sm font-semibold leading-snug text-slate-900">
+                      {spotlightBook?.title ?? "Buku unggulan minggu ini"}
+                    </h3>
+                    <p className="mt-2 text-sm font-bold text-slate-900">
+                      {spotlightBook ? formatRupiah(spotlightBook.price) : "Rp 0"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Total Komunitas
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-slate-900">
+                      17.5M+
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">Pembaca aktif bulanan</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Kurator Aktif
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-slate-900">1.5K+</p>
+                    <p className="mt-1 text-xs text-slate-500">Editor dan reviewer</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-14">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                  United Voices
+                </p>
+                <h2 className="mt-2 text-[clamp(1.9rem,4.4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
+                  Tim Kurasi yang Bikin Cerita Lebih Hidup
+                </h2>
               </div>
 
               <Link
                 href="/about"
-                className="inline-flex items-center gap-3 mt-10 bg-primary text-dark uppercase tracking-[0.15em] text-sm font-bold px-8 py-4 hover:bg-primary-dark transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-700"
               >
-                Selengkapnya
+                Lihat Tim
+              </Link>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {audienceCards.map((member) => (
+                <article
+                  key={member.name}
+                  className="rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_18px_40px_-36px_rgba(15,23,42,0.9)]"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
+                    <Image
+                      src={member.image}
+                      alt={member.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 25vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <p className="mt-3 text-sm font-semibold text-slate-900">{member.name}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-primary">
+                    {member.role}
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-600">{member.text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-14 overflow-hidden rounded-3xl bg-black px-6 py-10 text-white sm:px-10">
+            <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-300">
+                  Weekly Newsletter
+                </p>
+                <h2 className="mt-3 text-[clamp(1.9rem,4.2vw,3rem)] font-black leading-[1.02] tracking-[-0.03em]">
+                  Mau Dapat Rekomendasi Bacaan Terbaru?
+                </h2>
+                <p className="mt-4 max-w-xl text-sm text-slate-300 sm:text-base">
+                  Dapatkan ringkasan tren buku, koleksi pilihan editor, dan promo
+                  eksklusif langsung ke email kamu setiap minggu.
+                </p>
+
+                <form className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="email"
+                    placeholder="Masukkan email kamu"
+                    className="w-full rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm text-white placeholder:text-slate-300 focus:border-blue-300 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    className="rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-primary-dark"
+                  >
+                    Subscribe
+                  </button>
+                </form>
+              </div>
+
+              <div className="relative min-h-[190px] overflow-hidden rounded-2xl border border-white/15 bg-white/5 p-5">
+                <Image
+                  src="https://images.unsplash.com/photo-1551029506-0807df4e2031?w=900&h=700&fit=crop"
+                  alt="Microphone podcast"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 35vw"
+                  className="object-cover opacity-70"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/20" />
+                <div className="relative z-10 flex h-full flex-col justify-end">
+                  <p className="text-sm font-semibold">BookTalk Session</p>
+                  <p className="mt-1 text-xs text-slate-300">
+                    Update mingguan dari editor dan komunitas pembaca.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-14 grid gap-8 lg:grid-cols-2">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                Why BookStore
+              </p>
+              <h2 className="mt-3 text-[clamp(1.9rem,4.4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
+                Kenapa Pembaca Betah di Sini?
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
+                Kami fokus pada pengalaman membaca dari ujung ke ujung, mulai dari
+                pemilihan judul sampai buku sampai di tanganmu.
+              </p>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <Users className="h-5 w-5 text-primary" />
+                  <p className="mt-3 text-xl font-semibold text-slate-900">17.5M+</p>
+                  <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
+                    Reader Reach
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  <p className="mt-3 text-xl font-semibold text-slate-900">{totalBooks}+</p>
+                  <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
+                    Koleksi Aktif
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <Star className="h-5 w-5 text-primary" />
+                  <p className="mt-3 text-xl font-semibold text-slate-900">4.9/5</p>
+                  <p className="text-xs uppercase tracking-[0.15em] text-slate-500">
+                    User Rating
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {editorialBlocks.map((item) => (
+                <article
+                  key={item.title}
+                  className="rounded-2xl border border-slate-200 bg-white p-5"
+                >
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-14 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                Testimonials
+              </p>
+              <h2 className="mt-2 text-[clamp(1.9rem,4.4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
+                Shine Bright, Speak Loud
+              </h2>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {testimonials.map((testimonial) => (
+                <article
+                  key={testimonial.name}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
+                >
+                  <div className="mb-3 flex gap-1">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <Star
+                        key={index}
+                        className="h-4 w-4 text-primary"
+                        style={{ fill: "currentColor" }}
+                      />
+                    ))}
+                  </div>
+
+                  <p className="text-sm leading-relaxed text-slate-700">
+                    &ldquo;{testimonial.quote}&rdquo;
+                  </p>
+                  <p className="mt-4 text-sm font-semibold text-slate-900">
+                    {testimonial.name}
+                  </p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                    {testimonial.role}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section
+            id="katalog"
+            className="mt-14 scroll-mt-24 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
+          >
+            <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                  Trending Topics
+                </p>
+                <h2 className="mt-2 text-[clamp(1.9rem,4.4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
+                  Tap into Fresh Titles
+                </h2>
+                <p className="mt-3 text-sm text-slate-600">
+                  {q
+                    ? `Menampilkan hasil pencarian untuk \"${q}\".`
+                    : "Pilih kategori favoritmu atau cari judul buku secara langsung."}
+                </p>
+              </div>
+
+              <Link
+                href={buildHomeHref()}
+                className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-primary transition hover:text-primary-dark"
+              >
+                Reset Filter
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ==================== CATEGORIES — Dark section ==================== */}
-      <section className="bg-dark py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-4">
-              Genre & Topik
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-              Kategori <span className="text-primary">Buku</span>
-            </h2>
-            <div className="flex items-center justify-center gap-3 mt-6">
-              <div className="w-12 h-px bg-primary/40" />
-              <div className="w-2 h-2 rotate-45 border border-primary/40" />
-              <div className="w-12 h-px bg-primary/40" />
+            <div className="max-w-xl">
+              <SearchBar />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10">
-            {[
-              {
-                title: "Fiksi & Novel",
-                desc: "Petualangan, romansa, dan kisah menegangkan yang membawamu ke dunia lain.",
-                image:
-                  "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=300&fit=crop",
-              },
-              {
-                title: "Sains & Teknologi",
-                desc: "Penemuan terbaru dan teknologi masa depan dari para ahli dunia.",
-                image:
-                  "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=300&fit=crop",
-              },
-              {
-                title: "Pengembangan Diri",
-                desc: "Tingkatkan kualitas hidup dengan buku motivasi dan produktivitas.",
-                image:
-                  "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=300&fit=crop",
-              },
-            ].map((cat) => (
-              <div
-                key={cat.title}
-                className="group bg-dark relative overflow-hidden"
-              >
-                <div className="aspect-[4/3] relative overflow-hidden">
-                  <Image
-                    src={cat.image}
-                    alt={cat.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent" />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <p className="text-primary text-xs uppercase tracking-[0.2em] font-medium mb-2">
-                    Kategori
-                  </p>
-                  <h3 className="font-bold text-white text-xl mb-2">
-                    {cat.title}
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    {cat.desc}
-                  </p>
-                  <Link
-                    href="#katalog"
-                    className="inline-flex items-center gap-2 mt-4 text-primary text-sm font-medium uppercase tracking-wider hover:text-primary-light transition-colors"
-                  >
-                    Lihat Buku
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ==================== FEATURES — Elegant cards ==================== */}
-      <section className="bg-white py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-4">
-              Keunggulan Kami
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-dark tracking-tight">
-              Kenapa Memilih <span className="text-primary">BookStore?</span>
-            </h2>
-            <div className="flex items-center justify-center gap-3 mt-6">
-              <div className="w-12 h-px bg-primary/40" />
-              <div className="w-2 h-2 rotate-45 border border-primary/40" />
-              <div className="w-12 h-px bg-primary/40" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: Truck,
-                title: "Pengiriman Cepat",
-                desc: "Pengiriman ke seluruh Indonesia dengan estimasi 2-5 hari kerja.",
-              },
-              {
-                icon: Shield,
-                title: "Transaksi Aman",
-                desc: "Pembayaran terproteksi dengan keamanan berlapis.",
-              },
-              {
-                icon: Award,
-                title: "Buku Original",
-                desc: "Semua buku yang kami jual dijamin 100% asli.",
-              },
-              {
-                icon: Clock,
-                title: "Support 24/7",
-                desc: "Layanan pelanggan siap membantu kapan saja.",
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="group text-center p-8 border border-gray-100 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
-              >
-                <div className="w-16 h-16 mx-auto bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
-                  <f.icon className="h-7 w-7 text-primary group-hover:text-dark transition-colors duration-300" />
-                </div>
-                <h3 className="font-bold text-dark text-lg mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ==================== CATALOG ==================== */}
-      <section id="katalog" className="bg-[#f5f0e8] py-24 scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-4">
-              Katalog Lengkap
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-dark tracking-tight">
-              Koleksi <span className="text-primary">Buku Kami</span>
-            </h2>
-            <p className="mt-4 text-gray-500 max-w-xl mx-auto">
-              {q
-                ? `Hasil pencarian untuk "${q}"`
-                : "Temukan buku yang kamu cari dari berbagai kategori pilihan"}
-            </p>
-            <div className="flex items-center justify-center gap-3 mt-6">
-              <div className="w-12 h-px bg-primary/40" />
-              <div className="w-2 h-2 rotate-45 border border-primary/40" />
-              <div className="w-12 h-px bg-primary/40" />
-            </div>
-          </div>
-
-          {/* Search & Filter */}
-          <div className="max-w-xl mx-auto mb-8">
-            <SearchBar />
-          </div>
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            <Link
-              href="/"
-              className={`px-6 py-2.5 text-sm font-medium uppercase tracking-wider transition-all border ${
-                !category
-                  ? "bg-dark text-white border-dark"
-                  : "bg-transparent text-dark border-gray-300 hover:border-primary hover:text-primary"
-              }`}
-            >
-              Semua
-            </Link>
-            {categories.map((cat) => (
+            <div className="mt-6 flex flex-wrap gap-2">
               <Link
-                key={cat.id}
-                href={`/?category=${cat.id}`}
-                className={`px-6 py-2.5 text-sm font-medium uppercase tracking-wider transition-all border ${
-                  category === cat.id
-                    ? "bg-dark text-white border-dark"
-                    : "bg-transparent text-dark border-gray-300 hover:border-primary hover:text-primary"
+                href={buildHomeHref(q)}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition ${
+                  !category
+                    ? "border-primary bg-primary text-white"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-primary hover:text-primary"
                 }`}
               >
-                {cat.name}
+                Semua
               </Link>
-            ))}
-          </div>
 
-          {/* Book Grid */}
-          {books.length === 0 ? (
-            <div className="text-center py-20">
-              <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-dark">
-                Buku tidak ditemukan
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Coba gunakan kata kunci pencarian lain.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-              {books.map((book) => (
-                <BookCard
-                  key={book.id}
-                  id={book.id}
-                  title={book.title}
-                  price={book.price}
-                  imageUrl={book.imageUrl}
-                  category={book.category.name}
-                  stock={book.stock}
-                />
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={buildHomeHref(q, cat.id)}
+                  className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition ${
+                    category === cat.id
+                      ? "border-primary bg-primary text-white"
+                      : "border-slate-300 bg-white text-slate-700 hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {cat.name}
+                </Link>
               ))}
             </div>
-          )}
-        </div>
-      </section>
 
-      {/* ==================== TESTIMONIALS — Elegant dark section ==================== */}
-      <section className="bg-dark py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-4">
-              Testimonial
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-              Kata <span className="text-primary">Pembeli Kami</span>
-            </h2>
-            <div className="flex items-center justify-center gap-3 mt-6">
-              <div className="w-12 h-px bg-primary/40" />
-              <div className="w-2 h-2 rotate-45 border border-primary/40" />
-              <div className="w-12 h-px bg-primary/40" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Andi Pratama",
-                role: "Mahasiswa",
-                text: "Koleksi bukunya lengkap banget! Pengiriman juga cepat, buku sampai dalam kondisi sempurna. Sangat recommended.",
-                rating: 5,
-              },
-              {
-                name: "Siti Rahayu",
-                role: "Guru",
-                text: "Harga sangat terjangkau dibanding toko lain. Sudah jadi langganan beli buku di sini. Pelayanan sangat memuaskan.",
-                rating: 5,
-              },
-              {
-                name: "Budi Santoso",
-                role: "Dosen",
-                text: "Kualitas buku terjamin original. Proses pembelian mudah dan cepat. Toko buku online terbaik yang pernah saya gunakan.",
-                rating: 5,
-              },
-            ].map((t) => (
-              <div
-                key={t.name}
-                className="border border-white/10 p-8 hover:border-primary/30 transition-colors duration-300"
-              >
-                <div className="flex gap-1 mb-5">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 text-primary fill-primary"
-                    />
-                  ))}
-                </div>
-                <p className="text-gray-400 leading-relaxed italic">
-                  &ldquo;{t.text}&rdquo;
+            {books.length === 0 ? (
+              <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center">
+                <BookOpen className="mx-auto h-14 w-14 text-slate-300" />
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">
+                  Buku tidak ditemukan
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Coba ganti kata kunci atau pilih kategori yang berbeda.
                 </p>
-                <div className="mt-6 flex items-center gap-3 pt-6 border-t border-white/10">
-                  <div className="w-10 h-10 bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-gray-500">{t.role}</p>
-                  </div>
-                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            ) : (
+              <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {books.map((book) => (
+                  <BookCard
+                    key={book.id}
+                    id={book.id}
+                    title={book.title}
+                    price={book.price}
+                    imageUrl={book.imageUrl}
+                    category={book.category.name}
+                    stock={book.stock}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </main>
 
-      {/* ==================== CTA — Luxury banner ==================== */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1920&h=600&fit=crop"
-            alt="Perpustakaan"
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-dark/80" />
-        </div>
-
-        <div className="relative z-10 text-center max-w-3xl mx-auto px-4 sm:px-6">
-          <p className="text-primary uppercase tracking-[0.3em] text-sm font-medium mb-4">
-            Mulai Sekarang
-          </p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
-            TEMUKAN BUKU
-            <br />
-            <span className="text-primary">IMPIANMU</span>
-          </h2>
-          <p className="mt-6 text-gray-400 max-w-lg mx-auto leading-relaxed">
-            Daftar sekarang dan nikmati pengalaman belanja buku online terbaik
-            dengan harga spesial dan pengiriman cepat ke seluruh Indonesia.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-3 bg-primary text-dark uppercase tracking-[0.15em] text-sm font-bold px-10 py-4 hover:bg-primary-dark transition-colors"
-            >
-              Daftar Gratis
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="#katalog"
-              className="inline-flex items-center justify-center gap-3 border-2 border-white/30 text-white uppercase tracking-[0.15em] text-sm font-semibold px-10 py-4 hover:border-primary hover:text-primary transition-all"
-            >
-              Lihat Katalog
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ==================== FOOTER ==================== */}
         <Footer />
       </div>
     </>

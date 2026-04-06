@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
-  --primary: #c9a96e;
-  --primary-dark: #b8944f;
-  --primary-light: #d4ba85;
-  --primary-50: #faf6ee;
-  --primary-100: #f0e6cf;
-  --primary-200: #e3d0a8;
-  --primary-900: #6b5430;
-  --dark: #1a1a1a;
-  --dark-light: #2a2a2a;
-  --dark-lighter: #3a3a3a;
+  --background: #f7fbff;
+  --foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-900: #1e3a8a;
+  --dark: #0b0f19;
+  --dark-light: #131a27;
+  --dark-lighter: #1c2535;
 }
 
 @theme inline {
@@ -38,9 +38,17 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+.bg-grid-soft {
+  background-image:
+    linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(37, 99, 235, 0.045) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
 /* Utilitas untuk line-clamp */
 .line-clamp-2 {
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -63,10 +71,29 @@ body {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
 }
+
+@keyframes marquee {
+  from { transform: translateX(0%); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -14px, 0); }
+}
+
+@keyframes driftSlow {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -24px, 0); }
+}
+
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
 .animate-fade-in-right { animation: fadeInRight 0.8s ease-out forwards; }
 .animate-scale-in { animation: scaleIn 0.6s ease-out forwards; }
+.animate-marquee { animation: marquee 26s linear infinite; }
+.animate-drift { animation: drift 6s ease-in-out infinite; }
+.animate-drift-slow { animation: driftSlow 10s ease-in-out infinite; }
 .animation-delay-200 { animation-delay: 0.2s; }
 .animation-delay-400 { animation-delay: 0.4s; }
 .animation-delay-600 { animation-delay: 0.6s; }

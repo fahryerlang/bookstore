@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { formatRupiah } from "@/lib/utils";
-import { ArrowLeft, Package, Tag } from "lucide-react";
+import { ArrowLeft, Package, Tag } from "@/components/icons";
 import Link from "next/link";
 import AddToCartButton from "./AddToCartButton";
 

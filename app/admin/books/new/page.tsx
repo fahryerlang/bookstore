@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { Plus } from "lucide-react";
+import { Plus } from "@/components/icons";
 import BookForm from "./BookForm";
 
 /**
@@ -11,12 +11,9 @@ export default async function NewBookPage() {
   });
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Plus className="h-6 w-6 text-indigo-600" />
-          Tambah Buku Baru
-        </h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-white tracking-tight">Tambah Buku Baru</h1>
         <p className="text-gray-500 mt-1">
           Tambahkan buku baru ke koleksi toko.
         </p>

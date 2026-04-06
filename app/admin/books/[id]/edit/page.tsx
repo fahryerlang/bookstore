@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { Pencil } from "@/components/icons";
 import BookForm from "../../new/BookForm";
 
 /**
@@ -24,12 +24,9 @@ export default async function EditBookPage({ params }: EditBookPageProps) {
   if (!book) notFound();
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Pencil className="h-6 w-6 text-indigo-600" />
-          Edit Buku
-        </h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-white tracking-tight">Edit Buku</h1>
         <p className="text-gray-500 mt-1">
           Perbarui informasi buku &quot;{book.title}&quot;.
         </p>

@@ -60,7 +60,7 @@ export async function registerUser(
  *
  * @param {unknown} _prevState - State sebelumnya dari useActionState.
  * @param {FormData} formData - Data formulir login.
- * @returns {Promise<{success: boolean, message: string}>}
+ * @returns {Promise<{success: boolean, message: string, redirectTo?: string}>}
  */
 export async function loginUser(
   _prevState: unknown,

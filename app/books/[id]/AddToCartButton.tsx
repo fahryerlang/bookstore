@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, Loader2 } from "lucide-react";
+import { ShoppingCart, Loader2 } from "@/components/icons";
 import { addToCart } from "@/lib/actions/cart";
 import { useState, useTransition } from "react";
 

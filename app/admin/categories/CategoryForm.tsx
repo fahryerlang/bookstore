@@ -2,11 +2,8 @@
 
 import { useActionState } from "react";
 import { createCategory } from "@/lib/actions/categories";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, CheckCircle, X } from "@/components/icons";
 
-/**
- * Formulir untuk menambah kategori baru.
- */
 export default function CategoryForm() {
   const [state, formAction, isPending] = useActionState(createCategory, {
     success: false,
@@ -14,21 +11,30 @@ export default function CategoryForm() {
   });
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Plus className="h-5 w-5 text-indigo-600" />
-        Tambah Kategori
-      </h2>
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_65px_-52px_rgba(15,23,42,0.55)]">
+      <div className="border-b border-slate-200 px-6 py-5">
+        <h2 className="flex items-center gap-2.5 text-lg font-semibold text-slate-900">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100">
+            <Plus className="h-4 w-4 text-primary" />
+          </div>
+          Tambah Kategori
+        </h2>
+      </div>
 
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} className="p-6 space-y-5">
         {state.message && (
           <div
-            className={`px-4 py-3 rounded-lg text-sm ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium ${
               state.success
-                ? "bg-green-50 text-green-700"
-                : "bg-red-50 text-red-700"
+                ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                : "border border-red-200 bg-red-50 text-red-700"
             }`}
           >
+            {state.success ? (
+              <CheckCircle className="h-4 w-4 flex-shrink-0" />
+            ) : (
+              <X className="h-4 w-4 flex-shrink-0" />
+            )}
             {state.message}
           </div>
         )}
@@ -36,7 +42,7 @@ export default function CategoryForm() {
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1.5"
+            className="mb-2 block text-sm font-medium text-slate-700"
           >
             Nama Kategori
           </label>
@@ -45,7 +51,7 @@ export default function CategoryForm() {
             name="name"
             type="text"
             required
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all text-gray-900"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15"
             placeholder="Contoh: Fiksi Ilmiah"
           />
         </div>
@@ -53,7 +59,7 @@ export default function CategoryForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-dark disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           {isPending ? "Menyimpan..." : "Simpan Kategori"}

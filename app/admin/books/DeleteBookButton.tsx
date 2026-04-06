@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2 } from "@/components/icons";
 import { deleteBook } from "@/lib/actions/books";
 import { useTransition } from "react";
 
@@ -32,7 +32,7 @@ export default function DeleteBookButton({ id, title }: DeleteBookButtonProps) {
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="text-red-400 hover:text-red-600 disabled:opacity-50 transition-colors"
+      className="rounded-lg border border-transparent p-2 text-slate-400 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
     >
       {isPending ? (
         <Loader2 className="h-4 w-4 animate-spin" />

@@ -1,81 +1,69 @@
-import { BookOpen, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "@/components/icons";
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 
-/**
- * Footer luxury dark + gold style.
- */
 export default function Footer() {
   return (
-    <footer className="bg-dark text-gray-400">
-      {/* Top border accent */}
-      <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {/* Brand */}
+    <footer className="mt-16 bg-black text-slate-300">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 md:grid-cols-3">
           <div>
-            <div className="flex items-center gap-2.5 mb-5">
-              <div className="p-1.5 bg-primary">
-                <BookOpen className="h-5 w-5 text-dark" />
-              </div>
-              <span className="text-lg font-bold text-white uppercase tracking-wider">
-                BookStore
-              </span>
-            </div>
-            <p className="text-sm leading-relaxed text-gray-500">
-              Toko buku daring terpercaya dengan koleksi lengkap dari berbagai
-              kategori. Temukan buku favoritmu di sini.
+            <BrandLogo href="/" tone="light" className="mb-4" />
+            <p className="max-w-sm text-sm leading-relaxed text-slate-400">
+              Platform toko buku modern dengan kurasi judul pilihan, pengalaman
+              belanja cepat, dan pengiriman terpercaya ke seluruh Indonesia.
             </p>
           </div>
 
-          {/* Links */}
           <div>
-            <h3 className="text-primary font-semibold mb-5 uppercase tracking-[0.2em] text-sm">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">
               Tautan Cepat
-            </h3>
-            <ul className="space-y-3 text-sm">
+            </p>
+            <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/" className="hover:text-primary transition-colors">
+                <Link href="/" className="transition hover:text-blue-300">
                   Beranda
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-primary transition-colors">
+                <Link href="/about" className="transition hover:text-blue-300">
                   Tentang Kami
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-primary transition-colors">
+                <Link href="/contact" className="transition hover:text-blue-300">
                   Hubungi Kami
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h3 className="text-primary font-semibold mb-5 uppercase tracking-[0.2em] text-sm">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">
               Kontak
-            </h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-primary" />
+            </p>
+            <ul className="space-y-3 text-sm text-slate-400">
+              <li className="flex items-center gap-2.5">
+                <Mail className="h-4 w-4 text-blue-300" />
                 <span>info@bookstore.com</span>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-primary" />
+              <li className="flex items-center gap-2.5">
+                <Phone className="h-4 w-4 text-blue-300" />
                 <span>+62 812 3456 7890</span>
               </li>
-              <li className="flex items-center gap-3">
-                <MapPin className="h-4 w-4 text-primary" />
+              <li className="flex items-center gap-2.5">
+                <MapPin className="h-4 w-4 text-blue-300" />
                 <span>Jakarta, Indonesia</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} BookStore. Semua hak dilindungi.</p>
+        <div className="mt-10 border-t border-white/10 pt-6">
+          <div className="flex flex-col gap-3 text-xs uppercase tracking-[0.15em] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <p>&copy; {new Date().getFullYear()} BookStore. All rights reserved.</p>
+            <p>Built for readers who love clarity and speed.</p>
+          </div>
         </div>
       </div>
     </footer>
