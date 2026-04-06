@@ -14,7 +14,13 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   /** Rute yang memerlukan autentikasi */
-  const protectedRoutes = ["/admin", "/cart", "/checkout", "/contact"];
+  const protectedRoutes = [
+    "/admin",
+    "/dashboard",
+    "/cart",
+    "/checkout",
+    "/contact",
+  ];
   const isProtected = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
@@ -29,8 +35,8 @@ export function proxy(request: NextRequest) {
   }
 
   if (isAuthRoute && sessionCookie) {
-    const homeUrl = new URL("/", request.url);
-    return NextResponse.redirect(homeUrl);
+    const dashboardUrl = new URL("/dashboard", request.url);
+    return NextResponse.redirect(dashboardUrl);
   }
 
   return NextResponse.next();

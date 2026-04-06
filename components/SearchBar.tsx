@@ -27,13 +27,13 @@ export default function SearchBar() {
 
   return (
     <form onSubmit={handleSearch} className="relative w-full max-w-xl">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Cari judul buku..."
-        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary-100 outline-none transition-all text-gray-900 bg-white shadow-sm"
+        className="w-full pl-12 pr-4 py-3.5 border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-dark bg-white text-sm tracking-wide"
       />
     </form>
   );

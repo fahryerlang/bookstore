@@ -9,7 +9,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { logoutUser } from "@/lib/actions/auth";
 
 /**
@@ -19,89 +19,103 @@ interface NavbarProps {
   user: { id: string; name: string; email: string; role: string } | null;
 }
 
-/**
- * Floating navbar dengan efek glassmorphism.
- * Transparan di atas hero, menjadi solid saat scroll.
- */
+const desktopLinks = [
+  { href: "/", label: "Beranda" },
+  { href: "/about", label: "Tentang" },
+  { href: "/#katalog", label: "Katalog" },
+  { href: "/contact", label: "Kontak" },
+];
+
+const mobileLinks = [
+  { href: "/", label: "Beranda" },
+  { href: "/about", label: "Tentang Kami" },
+  { href: "/#katalog", label: "Katalog" },
+  { href: "/contact", label: "Hubungi Kami" },
+];
+
 export default function Navbar({ user }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const elevatedNavClasses = isOpen
+    ? "!border-white/12 !bg-dark/94 !shadow-[0_26px_70px_rgba(0,0,0,0.34)]"
+    : "";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-4">
+    <header
+      className="fixed inset-x-0 top-0 z-50 pointer-events-none px-9 pt-4 max-md:px-3 max-md:pt-3"
+      style={{
+        paddingLeft: "clamp(12px, 3vw, 36px)",
+        paddingRight: "clamp(12px, 3vw, 36px)",
+      }}
+    >
       <nav
-        className={`max-w-7xl mx-auto rounded-2xl transition-all duration-300 ${
-          scrolled
-            ? "bg-white/90 backdrop-blur-xl shadow-lg shadow-black/5 border border-gray-200/50"
-            : "bg-transparent"
-        }`}
+        className={`pointer-events-auto mx-auto w-full max-w-7xl border backdrop-blur-xl will-change-[border-radius,box-shadow,background-color,border-color] transition-[background-color,border-color,box-shadow] duration-300 ease-out ${elevatedNavClasses}`}
+        style={{
+          borderRadius: "28px",
+          borderColor: "rgba(255, 255, 255, 0.12)",
+          backgroundColor: "rgba(26, 26, 26, 0.84)",
+          boxShadow: "0 24px 68px rgba(0, 0, 0, 0.30)",
+        }}
       >
-        <div className="px-5 sm:px-6">
-          <div className="flex justify-between h-16">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+          <div
+            className="flex items-center justify-between transition-[height] duration-300 ease-out"
+            style={{
+              height: "64px",
+            }}
+          >
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="p-1.5 bg-primary rounded-lg">
-                  <BookOpen className="h-5 w-5 text-white" />
+                <div className="rounded-xl bg-primary p-1.5 transition-transform duration-300 ease-out">
+                  <BookOpen className="h-5 w-5 text-dark" />
                 </div>
-                <span className="text-lg font-bold text-gray-900 transition-colors duration-300">
+                <span className="text-lg font-bold text-white tracking-wider uppercase">
                   BookStore
                 </span>
               </Link>
             </div>
 
-            {/* Desktop Menu */}
+            {/* Desktop Menu — centered */}
             <div className="hidden md:flex items-center gap-1">
-              {[
-                { href: "/", label: "Beranda" },
-                { href: "/about", label: "Tentang" },
-                { href: "/contact", label: "Kontak" },
-              ].map((link) => (
+              {desktopLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="px-3.5 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary-50 transition-all duration-300"
+                  className="rounded-2xl px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-primary tracking-wide uppercase transition-colors duration-300"
                 >
                   {link.label}
                 </Link>
               ))}
+            </div>
 
+            {/* Right Actions */}
+            <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <>
-                  {user.role === "ADMIN" && (
-                    <Link
-                      href="/admin"
-                      className="px-3.5 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary-50 transition-all duration-300"
-                    >
-                      Dashboard
-                    </Link>
-                  )}
+                  <Link
+                    href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+                    className="rounded-2xl px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-primary uppercase tracking-wide transition-colors duration-300"
+                  >
+                    Dashboard
+                  </Link>
                   <Link
                     href="/cart"
-                    className="p-2 rounded-xl text-gray-500 hover:text-primary hover:bg-primary-50 transition-all duration-300 ml-1"
+                    className="rounded-2xl p-2 text-gray-400 hover:bg-white/5 hover:text-primary transition-colors duration-300"
                   >
                     <ShoppingCart className="h-5 w-5" />
                   </Link>
-                  <div
-                    className="flex items-center gap-2 ml-2 pl-3 border-l border-gray-200"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="flex items-center gap-2 ml-2 pl-3 border-l border-white/10">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                       <User className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-300">
                       {user.name}
                     </span>
                     <form action={logoutUser}>
                       <button
                         type="submit"
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                         title="Keluar"
                       >
                         <LogOut className="h-4 w-4" />
@@ -110,16 +124,16 @@ export default function Navbar({ user }: NavbarProps) {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center gap-2 ml-2">
+                <div className="flex items-center gap-3">
                   <Link
                     href="/login"
-                    className="px-4 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary-50 transition-all duration-300"
+                    className="rounded-2xl px-4 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-primary uppercase tracking-wide transition-colors duration-300"
                   >
                     Masuk
                   </Link>
                   <Link
                     href="/register"
-                    className="bg-primary text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/25"
+                    className="rounded-2xl bg-primary px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-dark hover:bg-primary-dark transition-colors"
                   >
                     Daftar
                   </Link>
@@ -131,7 +145,9 @@ export default function Navbar({ user }: NavbarProps) {
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-expanded={isOpen}
+                aria-label={isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+                className="p-2 rounded-xl text-gray-300 hover:text-primary transition-colors"
               >
                 {isOpen ? (
                   <X className="h-5 w-5" />
@@ -144,18 +160,24 @@ export default function Navbar({ user }: NavbarProps) {
         </div>
 
         {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden border-t border-gray-200/50 bg-white/95 backdrop-blur-xl rounded-b-2xl">
+        <div
+          className={`grid overflow-hidden border-t transition-[grid-template-rows,opacity,border-color] duration-300 ease-out md:hidden ${
+            isOpen
+              ? "grid-rows-[1fr] opacity-100 border-white/10"
+              : "pointer-events-none grid-rows-[0fr] opacity-0 border-transparent"
+          }`}
+          style={{
+            borderBottomLeftRadius: "28px",
+            borderBottomRightRadius: "28px",
+          }}
+        >
+          <div className="overflow-hidden">
             <div className="px-5 py-4 space-y-1">
-              {[
-                { href: "/", label: "Beranda" },
-                { href: "/about", label: "Tentang Kami" },
-                { href: "/contact", label: "Hubungi Kami" },
-              ].map((link) => (
+              {mobileLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block px-3 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary font-medium transition-colors"
+                  className="block px-3 py-2.5 rounded-xl text-gray-300 hover:bg-white/5 hover:text-primary font-medium transition-colors uppercase tracking-wide text-sm"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.label}
@@ -163,27 +185,25 @@ export default function Navbar({ user }: NavbarProps) {
               ))}
               {user ? (
                 <>
-                  {user.role === "ADMIN" && (
-                    <Link
-                      href="/admin"
-                      className="block px-3 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary font-medium transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  )}
+                  <Link
+                    href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+                    className="block px-3 py-2.5 rounded-xl text-gray-300 hover:bg-white/5 hover:text-primary font-medium transition-colors uppercase tracking-wide text-sm"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
                   <Link
                     href="/cart"
-                    className="block px-3 py-2.5 rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary font-medium transition-colors"
+                    className="block px-3 py-2.5 rounded-xl text-gray-300 hover:bg-white/5 hover:text-primary font-medium transition-colors uppercase tracking-wide text-sm"
                     onClick={() => setIsOpen(false)}
                   >
                     Keranjang
                   </Link>
-                  <div className="pt-2 mt-2 border-t border-gray-100">
+                  <div className="pt-2 mt-2 border-t border-white/10">
                     <form action={logoutUser}>
                       <button
                         type="submit"
-                        className="w-full text-left px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 font-medium transition-colors"
+                        className="w-full text-left px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 font-medium transition-colors"
                       >
                         Keluar
                       </button>
@@ -191,17 +211,17 @@ export default function Navbar({ user }: NavbarProps) {
                   </div>
                 </>
               ) : (
-                <div className="pt-2 mt-2 border-t border-gray-100 flex gap-2">
+                <div className="pt-2 mt-2 border-t border-white/10 flex gap-2">
                   <Link
                     href="/login"
-                    className="flex-1 text-center px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    className="flex-1 text-center px-4 py-2.5 rounded-xl border border-white/20 text-gray-300 font-medium hover:bg-white/5 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     Masuk
                   </Link>
                   <Link
                     href="/register"
-                    className="flex-1 text-center px-4 py-2.5 rounded-xl bg-primary text-white font-medium hover:bg-primary-dark transition-colors"
+                    className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-center font-bold text-dark hover:bg-primary-dark transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     Daftar
@@ -210,7 +230,7 @@ export default function Navbar({ user }: NavbarProps) {
               )}
             </div>
           </div>
-        )}
+        </div>
       </nav>
     </header>
   );

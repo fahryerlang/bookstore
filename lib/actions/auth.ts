@@ -65,7 +65,7 @@ export async function registerUser(
 export async function loginUser(
   _prevState: unknown,
   formData: FormData
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; redirectTo?: string }> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -90,7 +90,11 @@ export async function loginUser(
 
     await setSession(user.id);
 
-    return { success: true, message: "Login berhasil!" };
+    return {
+      success: true,
+      message: "Login berhasil!",
+      redirectTo: user.role === "ADMIN" ? "/admin" : "/dashboard",
+    };
   } catch (error) {
     console.error("Gagal login:", error);
     return { success: false, message: "Terjadi kesalahan sistem." };
