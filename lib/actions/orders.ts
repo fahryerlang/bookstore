@@ -6,6 +6,12 @@ import {
   getShippingOption,
   serializeCheckoutSnapshot,
 } from "@/lib/checkout";
+import {
+  canAdvanceOrderStatus,
+  isFinalOrderStatus,
+  isManagedOrderStatus,
+  type ManagedOrderStatus,
+} from "@/lib/order-status";
 import { revalidatePath } from "next/cache";
 import { requireAuth, requireAdmin } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -157,11 +163,42 @@ export async function createOrder(
  */
 export async function updateOrderStatus(
   orderId: string,
-  status: "PENDING_PAYMENT" | "PROCESSING" | "SHIPPED" | "COMPLETED"
+  status: ManagedOrderStatus
 ) {
   await requireAdmin();
 
   try {
+    if (!isManagedOrderStatus(status)) {
+      return { success: false, message: "Status pesanan tidak dikenali." };
+    }
+
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { status: true },
+    });
+
+    if (!existingOrder || !isManagedOrderStatus(existingOrder.status)) {
+      return { success: false, message: "Pesanan tidak ditemukan." };
+    }
+
+    if (existingOrder.status === status) {
+      return { success: true, message: "Status pesanan tetap sama." };
+    }
+
+    if (isFinalOrderStatus(existingOrder.status)) {
+      return {
+        success: false,
+        message: "Pesanan yang sudah selesai tidak bisa diubah kembali.",
+      };
+    }
+
+    if (!canAdvanceOrderStatus(existingOrder.status, status)) {
+      return {
+        success: false,
+        message: "Status pesanan hanya bisa maju satu langkah dan tidak bisa kembali.",
+      };
+    }
+
     await prisma.order.update({
       where: { id: orderId },
       data: { status },

@@ -57,6 +57,7 @@ async function main() {
   const booksData = [
     {
       title: "Laskar Pelangi",
+      author: "Andrea Hirata",
       description:
         "Novel karya Andrea Hirata yang menceritakan kisah perjuangan anak-anak Belitung dalam mengejar pendidikan. Sebuah cerita yang menginspirasi tentang semangat pantang menyerah.",
       price: 75000,
@@ -66,6 +67,7 @@ async function main() {
     },
     {
       title: "Bumi Manusia",
+      author: "Pramoedya Ananta Toer",
       description:
         "Novel karya Pramoedya Ananta Toer, bagian pertama dari Tetralogi Buru. Mengisahkan kehidupan Minke, seorang pribumi yang berpendidikan Eropa di masa kolonial.",
       price: 89000,
@@ -75,6 +77,7 @@ async function main() {
     },
     {
       title: "Atomic Habits",
+      author: "James Clear",
       description:
         "Buku karya James Clear tentang cara membangun kebiasaan baik dan menghilangkan kebiasaan buruk. Panduan praktis untuk perubahan hidup yang nyata.",
       price: 99000,
@@ -84,6 +87,7 @@ async function main() {
     },
     {
       title: "Clean Code",
+      author: "Robert C. Martin",
       description:
         "Buku panduan dari Robert C. Martin tentang cara menulis kode yang bersih, mudah dibaca, dan mudah dirawat. Wajib baca untuk setiap programmer.",
       price: 150000,
@@ -93,6 +97,7 @@ async function main() {
     },
     {
       title: "The Pragmatic Programmer",
+      author: "David Thomas & Andrew Hunt",
       description:
         "Panduan klasik untuk pengembang perangkat lunak yang ingin meningkatkan keterampilan dan produktivitas mereka secara signifikan.",
       price: 175000,
@@ -102,6 +107,7 @@ async function main() {
     },
     {
       title: "Sapiens: Riwayat Singkat Umat Manusia",
+      author: "Yuval Noah Harari",
       description:
         "Buku karya Yuval Noah Harari yang menelusuri sejarah umat manusia dari masa prasejarah hingga era modern dengan perspektif yang unik dan menarik.",
       price: 120000,
@@ -111,6 +117,7 @@ async function main() {
     },
     {
       title: "A Brief History of Time",
+      author: "Stephen Hawking",
       description:
         "Buku karya Stephen Hawking yang menjelaskan konsep-konsep fisika dan kosmologi secara sederhana untuk pembaca umum. Dari Big Bang hingga lubang hitam.",
       price: 110000,
@@ -120,6 +127,7 @@ async function main() {
     },
     {
       title: "Filosofi Teras",
+      author: "Henry Manampiring",
       description:
         "Buku karya Henry Manampiring tentang filosofi Stoisisme yang disampaikan dengan gaya bahasa ringan dan contoh-contoh yang relevan untuk kehidupan modern.",
       price: 82000,
@@ -129,6 +137,7 @@ async function main() {
     },
     {
       title: "Sejarah Dunia yang Disembunyikan",
+      author: "Jonathan Black",
       description:
         "Mengungkap fakta-fakta sejarah yang jarang diketahui publik. Buku yang membuka perspektif baru tentang peristiwa-peristiwa penting dunia.",
       price: 95000,
@@ -138,6 +147,7 @@ async function main() {
     },
     {
       title: "Cosmos",
+      author: "Carl Sagan",
       description:
         "Buku karya Carl Sagan yang mengajak pembaca menjelajahi alam semesta. Sebuah perjalanan epik dari atom hingga galaksi terjauh.",
       price: 130000,

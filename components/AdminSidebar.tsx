@@ -22,7 +22,7 @@ const menuItems = [
   { href: "/admin/books", label: "Buku", icon: BookOpen },
   { href: "/admin/users", label: "Pengguna", icon: Users },
   { href: "/admin/orders", label: "Pesanan", icon: ShoppingBag },
-  { href: "/admin/messages", label: "Pesan", icon: MessageSquare },
+  { href: "/admin/messages", label: "Kontak", icon: MessageSquare },
 ];
 
 export default function AdminSidebar() {

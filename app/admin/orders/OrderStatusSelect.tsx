@@ -1,12 +1,17 @@
 "use client";
 
 import { updateOrderStatus } from "@/lib/actions/orders";
+import {
+  getUpdatableOrderStatuses,
+  isFinalOrderStatus,
+  type ManagedOrderStatus,
+} from "@/lib/order-status";
 import { useTransition } from "react";
 import { Loader2 } from "@/components/icons";
 
 interface OrderStatusSelectProps {
   orderId: string;
-  currentStatus: string;
+  currentStatus: ManagedOrderStatus;
   statusLabels: Record<string, string>;
 }
 
@@ -16,6 +21,7 @@ export default function OrderStatusSelect({
   statusLabels,
 }: OrderStatusSelectProps) {
   const [isPending, startTransition] = useTransition();
+  const availableStatuses = getUpdatableOrderStatuses(currentStatus);
 
   const statusConfig: Record<string, { border: string; bg: string; text: string }> = {
     PENDING_PAYMENT: { border: "border-amber-200", bg: "bg-amber-50", text: "text-amber-700" },
@@ -25,11 +31,7 @@ export default function OrderStatusSelect({
   };
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newStatus = e.target.value as
-      | "PENDING_PAYMENT"
-      | "PROCESSING"
-      | "SHIPPED"
-      | "COMPLETED";
+    const newStatus = e.target.value as ManagedOrderStatus;
 
     startTransition(async () => {
       await updateOrderStatus(orderId, newStatus);
@@ -47,15 +49,25 @@ export default function OrderStatusSelect({
 
   const sc = statusConfig[currentStatus];
 
+  if (isFinalOrderStatus(currentStatus)) {
+    return (
+      <span
+        className={`inline-flex rounded-lg border px-3 py-1.5 text-xs font-semibold ${sc.border} ${sc.bg} ${sc.text}`}
+      >
+        {statusLabels[currentStatus]} Final
+      </span>
+    );
+  }
+
   return (
     <select
       value={currentStatus}
       onChange={handleChange}
       className={`cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-semibold outline-none transition-colors ${sc.border} ${sc.bg} ${sc.text}`}
     >
-      {Object.entries(statusLabels).map(([value, label]) => (
+      {availableStatuses.map((value) => (
         <option key={value} value={value}>
-          {label}
+          {statusLabels[value]}
         </option>
       ))}
     </select>

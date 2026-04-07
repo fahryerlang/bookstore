@@ -9,6 +9,7 @@ import { ShoppingCart } from "@/components/icons";
 interface BookCardProps {
   id: string;
   title: string;
+  author?: string | null;
   price: number;
   imageUrl: string;
   category: string;
@@ -21,6 +22,7 @@ interface BookCardProps {
 export default function BookCard({
   id,
   title,
+  author,
   price,
   imageUrl,
   category,
@@ -56,6 +58,9 @@ export default function BookCard({
           <h3 className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-primary">
             {title}
           </h3>
+          <p className="mt-1 text-xs font-medium text-slate-500">
+            {author ? `Oleh ${author}` : "Penulis belum diisi"}
+          </p>
           <div className="mt-3 flex items-center justify-between">
             <p className="text-base font-bold text-slate-900">
               {formatRupiah(price)}

@@ -139,7 +139,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const [books, categories, totalBooks, totalCategories] = await Promise.all([
     prisma.book.findMany({
       where: {
-        ...(q && { title: { contains: q } }),
+        ...(q && {
+          OR: [{ title: { contains: q } }, { author: { contains: q } }],
+        }),
         ...(category && { categoryId: category }),
       },
       include: { category: true },
@@ -243,6 +245,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                     </p>
                     <p className="mt-2 text-lg font-semibold leading-tight text-white">
                       {spotlightBook?.title ?? "Buku unggulan minggu ini"}
+                    </p>
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+                      {spotlightBook?.author ? `Oleh ${spotlightBook.author}` : "Kurasi editor"}
                     </p>
                     <p className="mt-3 text-sm font-semibold text-blue-200">
                       {spotlightBook ? formatRupiah(spotlightBook.price) : "Rp 0"}
@@ -778,6 +783,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                     key={book.id}
                     id={book.id}
                     title={book.title}
+                    author={book.author}
                     price={book.price}
                     imageUrl={book.imageUrl}
                     category={book.category.name}

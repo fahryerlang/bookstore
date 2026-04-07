@@ -43,6 +43,7 @@ model Category {
 model Book {
   id          String     @id @default(uuid())
   title       String
+  author      String?
   description String     @db.Text
   price       Int
   stock       Int

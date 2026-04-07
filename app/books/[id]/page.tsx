@@ -13,6 +13,7 @@ import {
   Star,
   Tag,
   Truck,
+  User,
 } from "@/components/icons";
 import Link from "next/link";
 import AddToCartButton from "./AddToCartButton";
@@ -74,6 +75,12 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
   const excerpt = createExcerpt(book.description);
 
   const detailHighlights = [
+    {
+      icon: User,
+      label: "Penulis",
+      value: book.author || "Penulis belum diisi",
+      hint: "Informasi penulis membantu kurasi katalog terasa lebih lengkap dan meyakinkan.",
+    },
     {
       icon: Tag,
       label: "Kategori",
@@ -194,6 +201,9 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                     <h1 className="mt-4 text-[clamp(2.1rem,5vw,4rem)] font-black leading-[0.96] tracking-[-0.045em] text-slate-900">
                       {book.title}
                     </h1>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      {book.author ? `Oleh ${book.author}` : "Penulis belum diisi"}
+                    </p>
                     <p className="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
                       {excerpt}
                     </p>
@@ -392,6 +402,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                       key={item.id}
                       id={item.id}
                       title={item.title}
+                      author={item.author}
                       price={item.price}
                       imageUrl={item.imageUrl}
                       category={item.category.name}

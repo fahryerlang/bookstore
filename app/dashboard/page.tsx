@@ -399,6 +399,9 @@ export default async function UserDashboardPage() {
                   <h3 className="mt-3 line-clamp-2 text-base font-bold leading-tight text-slate-900">
                     {book.title}
                   </h3>
+                  <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                    {book.author ? `Oleh ${book.author}` : "Penulis belum diisi"}
+                  </p>
 
                   <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600">
                     {book.description}

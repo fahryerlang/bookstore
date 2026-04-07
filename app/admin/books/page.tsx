@@ -134,6 +134,9 @@ export default async function AdminBooksPage() {
                           <p className="max-w-60 truncate text-sm font-semibold text-slate-900">
                             {book.title}
                           </p>
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {book.author ?? "Penulis belum diisi"}
+                          </p>
                           <p className="mt-0.5 text-xs text-slate-500">ID #{book.id.slice(0, 8)}</p>
                         </div>
                       </div>
