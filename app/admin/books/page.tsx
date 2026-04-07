@@ -175,7 +175,7 @@ export default async function AdminBooksPage() {
                       {formatDate(book.createdAt)}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Link
                           href={`/admin/books/${book.id}/edit`}
                           className="rounded-lg border border-primary/20 bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-100"

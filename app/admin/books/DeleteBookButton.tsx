@@ -30,14 +30,22 @@ export default function DeleteBookButton({ id, title }: DeleteBookButtonProps) {
 
   return (
     <button
+      type="button"
       onClick={handleDelete}
       disabled={isPending}
-      className="rounded-lg border border-transparent p-2 text-slate-400 transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+      aria-label={`Hapus buku ${title}`}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-all duration-200 hover:bg-red-100 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Menghapus...</span>
+        </>
       ) : (
-        <Trash2 className="h-4 w-4" />
+        <>
+          <Trash2 className="h-4 w-4" />
+          <span>Hapus</span>
+        </>
       )}
     </button>
   );

@@ -1,14 +1,23 @@
 import prisma from "@/lib/prisma";
+import Link from "next/link";
 import { FolderOpen } from "@/components/icons";
 import { formatDate } from "@/lib/utils";
 import CategoryForm from "./CategoryForm";
 import DeleteCategoryButton from "./DeleteCategoryButton";
 
-export default async function CategoriesPage() {
+interface CategoriesPageProps {
+  searchParams: Promise<{ edit?: string }>;
+}
+
+export default async function CategoriesPage({ searchParams }: CategoriesPageProps) {
+  const { edit } = await searchParams;
   const categories = await prisma.category.findMany({
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { books: true } } },
   });
+  const editingCategory = edit
+    ? categories.find((category) => category.id === edit) ?? null
+    : null;
 
   const totalBookMappings = categories.reduce(
     (sum, category) => sum + category._count.books,
@@ -91,7 +100,14 @@ export default async function CategoriesPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,350px)_minmax(0,1fr)]">
         <div className="space-y-4">
-          <CategoryForm />
+          <CategoryForm
+            key={editingCategory?.id ?? "create-category"}
+            category={
+              editingCategory
+                ? { id: editingCategory.id, name: editingCategory.name }
+                : undefined
+            }
+          />
 
           <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_16px_45px_-42px_rgba(15,23,42,0.65)]">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -134,7 +150,12 @@ export default async function CategoriesPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {categories.map((cat) => (
-                      <tr key={cat.id} className="transition-colors hover:bg-slate-50">
+                      <tr
+                        key={cat.id}
+                        className={`transition-colors hover:bg-slate-50 ${
+                          editingCategory?.id === cat.id ? "bg-primary-50/40" : ""
+                        }`}
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary-50">
@@ -169,7 +190,19 @@ export default async function CategoriesPage() {
                           {formatDate(cat.createdAt)}
                         </td>
                         <td className="px-6 py-4">
-                          <DeleteCategoryButton id={cat.id} name={cat.name} />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Link
+                              href={`/admin/categories?edit=${cat.id}`}
+                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                                editingCategory?.id === cat.id
+                                  ? "border border-primary/30 bg-primary text-white"
+                                  : "border border-primary/20 bg-primary-50 text-primary hover:bg-primary-100"
+                              }`}
+                            >
+                              {editingCategory?.id === cat.id ? "Sedang Diedit" : "Edit"}
+                            </Link>
+                            <DeleteCategoryButton id={cat.id} name={cat.name} />
+                          </div>
                         </td>
                       </tr>
                     ))}
