@@ -5,6 +5,7 @@ import { Clock, Sparkles, User } from "@/components/icons";
 const mobileNavItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/books", label: "Buku" },
+  { href: "/dashboard/orders", label: "Riwayat" },
   { href: "/dashboard/profile", label: "Profil" },
   { href: "/cart", label: "Keranjang" },
   { href: "/checkout", label: "Checkout" },

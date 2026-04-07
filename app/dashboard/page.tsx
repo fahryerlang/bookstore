@@ -250,10 +250,10 @@ export default async function UserDashboardPage() {
             </div>
 
             <Link
-              href="/checkout"
+              href="/dashboard/orders"
               className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
             >
-              Lanjut Checkout
+              Lihat Semua Riwayat
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -333,6 +333,14 @@ export default async function UserDashboardPage() {
             >
               <span className="text-sm font-semibold text-slate-800">Hubungi Admin</span>
               <MessageSquare className="h-4 w-4 text-slate-400 transition group-hover:text-primary" />
+            </Link>
+
+            <Link
+              href="/dashboard/orders"
+              className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-primary/35 hover:bg-white"
+            >
+              <span className="text-sm font-semibold text-slate-800">Riwayat Belanja</span>
+              <Package className="h-4 w-4 text-slate-400 transition group-hover:text-primary" />
             </Link>
 
             <Link

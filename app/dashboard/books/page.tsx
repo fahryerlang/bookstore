@@ -2,25 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { formatRupiah } from "@/lib/utils";
-import { BookOpen, Search, Sparkles } from "@/components/icons";
+import { BookOpen, Sparkles } from "@/components/icons";
+import DashboardBooksFilters from "@/components/DashboardBooksFilters";
 
 interface UserBooksPageProps {
   searchParams: Promise<{ q?: string; category?: string }>;
-}
-
-function buildBooksHref(q?: string, categoryId?: string) {
-  const params = new URLSearchParams();
-
-  if (q) {
-    params.set("q", q);
-  }
-
-  if (categoryId) {
-    params.set("category", categoryId);
-  }
-
-  const query = params.toString();
-  return query ? `/dashboard/books?${query}` : "/dashboard/books";
 }
 
 export default async function UserBooksPage({ searchParams }: UserBooksPageProps) {
@@ -60,68 +46,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
           </div>
         </div>
 
-        <form method="get" className="mt-6 grid gap-3 md:grid-cols-[1fr_220px_auto]">
-          <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3">
-            <Search className="h-4 w-4 text-slate-400" />
-            <input
-              type="search"
-              name="q"
-              defaultValue={q ?? ""}
-              placeholder="Cari judul buku..."
-              className="h-11 w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-            />
-          </label>
-
-          <select
-            name="category"
-            defaultValue={category ?? ""}
-            className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none"
-          >
-            <option value="">Semua kategori</option>
-            {categories.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="submit"
-            className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white transition hover:bg-primary-dark"
-          >
-            Terapkan Filter
-          </button>
-        </form>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href={buildBooksHref(q)}
-            className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition ${
-              !category
-                ? "border-primary/30 bg-primary-50 text-primary-900"
-                : "border-slate-200 bg-white text-slate-600 hover:border-primary/25 hover:text-primary"
-            }`}
-          >
-            Semua
-          </Link>
-          {categories.map((item) => {
-            const active = category === item.id;
-
-            return (
-              <Link
-                key={item.id}
-                href={buildBooksHref(q, item.id)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition ${
-                  active
-                    ? "border-primary/30 bg-primary-50 text-primary-900"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-primary/25 hover:text-primary"
-                }`}
-              >
-                {item.name}
-              </Link>
-            );
-          })}
-        </div>
+        <DashboardBooksFilters categories={categories.map((item) => ({ id: item.id, name: item.name }))} />
       </section>
 
       <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_24px_65px_-52px_rgba(15,23,42,0.55)]">

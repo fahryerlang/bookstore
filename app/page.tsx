@@ -165,8 +165,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <section className="relative rounded-[30px] border border-slate-200 bg-white p-3 shadow-[0_38px_95px_-60px_rgba(15,23,42,0.75)]">
             <div className="relative isolate overflow-hidden rounded-[24px]">
               <Image
-                src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=1920&h=1200&fit=crop"
-                alt="Tim berdiskusi tentang buku"
+                src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1920&h=1200&fit=crop"
+                alt="Interior perpustakaan dengan rak buku tinggi"
                 fill
                 priority
                 sizes="100vw"

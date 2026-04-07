@@ -107,7 +107,7 @@ export async function loginUser(
  */
 export async function logoutUser() {
   await clearSession();
-  redirect("/login");
+  redirect("/");
 }
 
 /**

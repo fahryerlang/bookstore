@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  ShoppingBag,
   ShoppingCart,
   User,
 } from "@/components/icons";
@@ -24,6 +25,7 @@ interface UserSidebarProps {
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/books", label: "Katalog Buku", icon: BookOpen },
+  { href: "/dashboard/orders", label: "Riwayat Belanja", icon: ShoppingBag },
   { href: "/dashboard/profile", label: "Profil", icon: User },
   { href: "/cart", label: "Keranjang", icon: ShoppingCart },
   { href: "/checkout", label: "Checkout", icon: CreditCard },
