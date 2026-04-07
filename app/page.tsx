@@ -161,7 +161,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <div className="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl animate-drift-slow" />
         <div className="pointer-events-none absolute -right-24 top-[34rem] h-72 w-72 rounded-full bg-sky-300/20 blur-3xl animate-drift" />
 
-        <main className="relative mx-auto w-full max-w-7xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+        <main className="relative mx-auto w-full max-w-[min(110rem,calc(100vw-2rem))] px-4 pb-20 pt-28 sm:px-6 lg:px-8">
           <section className="relative rounded-[30px] border border-slate-200 bg-white p-3 shadow-[0_38px_95px_-60px_rgba(15,23,42,0.75)]">
             <div className="relative isolate overflow-hidden rounded-[24px]">
               <Image
@@ -612,7 +612,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <section className="mt-14 grid gap-8 lg:grid-cols-2">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-                Why BookStore
+                Why Erlangmedia
               </p>
               <h2 className="mt-3 text-[clamp(1.9rem,4.4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
                 Kenapa Pembaca Betah di Sini?

@@ -1,3 +1,13 @@
 {
-  "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+  "chat.tools.terminal.autoApprove": {
+    "/^npm\\.cmd run lint -- \"lib/actions/auth\\.ts\" \"components/ProfileEditForm\\.tsx\" \"components/ProfileOverview\\.tsx\" \"app/dashboard/profile/page\\.tsx\" \"app/profile/page\\.tsx\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^npm\\.cmd run lint -- \"app/checkout/page\\.tsx\" \"components/BrandLogo\\.tsx\" \"app/layout\\.tsx\" \"components/ProfileOverview\\.tsx\" \"components/Footer\\.tsx\" \"app/contact/page\\.tsx\" \"app/page\\.tsx\" \"app/about/page\\.tsx\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
 }

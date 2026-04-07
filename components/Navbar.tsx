@@ -37,7 +37,7 @@ export default function Navbar({ user }: NavbarProps) {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 lg:px-8">
-      <nav className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200/90 bg-white/90 shadow-[0_24px_60px_-45px_rgba(15,23,42,0.8)] backdrop-blur-md">
+      <nav className="mx-auto w-full max-w-[min(110rem,calc(100vw-2rem))] rounded-2xl border border-slate-200/90 bg-white/90 shadow-[0_24px_60px_-45px_rgba(15,23,42,0.8)] backdrop-blur-md">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6">
           <BrandLogo href="/" tone="dark" size="sm" />
 

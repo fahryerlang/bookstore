@@ -2,7 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { setSession, clearSession } from "@/lib/auth";
+import { setSession, clearSession, getSession } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 /**
@@ -107,4 +108,66 @@ export async function loginUser(
 export async function logoutUser() {
   await clearSession();
   redirect("/login");
+}
+
+/**
+ * Memperbarui profil pengguna yang sedang login.
+ */
+export async function updateProfile(
+  _prevState: unknown,
+  formData: FormData
+): Promise<{ success: boolean; message: string }> {
+  const session = await getSession();
+
+  if (!session) {
+    return { success: false, message: "Sesi Anda sudah berakhir. Silakan login kembali." };
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+
+  if (!name || !email) {
+    return { success: false, message: "Nama dan email wajib diisi." };
+  }
+
+  if (name.length < 3) {
+    return { success: false, message: "Nama minimal 3 karakter." };
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    return { success: false, message: "Format email tidak valid." };
+  }
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email,
+        NOT: { id: session.id },
+      },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      return { success: false, message: "Email sudah dipakai akun lain." };
+    }
+
+    await prisma.user.update({
+      where: { id: session.id },
+      data: { name, email },
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/profile");
+    revalidatePath("/profile");
+    revalidatePath("/checkout");
+
+    return {
+      success: true,
+      message: "Profil berhasil diperbarui.",
+    };
+  } catch (error) {
+    console.error("Gagal memperbarui profil:", error);
+    return { success: false, message: "Terjadi kesalahan sistem." };
+  }
 }

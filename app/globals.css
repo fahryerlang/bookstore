@@ -38,6 +38,47 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+.editorial-surface {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.9) 100%);
+  box-shadow: 0 32px 90px -65px rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.editorial-surface-dark {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(135deg, rgba(2, 6, 23, 0.92) 0%, rgba(15, 23, 42, 0.88) 52%, rgba(30, 58, 138, 0.74) 100%);
+  box-shadow: 0 38px 120px -72px rgba(15, 23, 42, 0.95);
+}
+
+.editorial-pill {
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--primary-900);
+  letter-spacing: 0.16em;
+}
+
+.editorial-input {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.92) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.editorial-input:hover {
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.editorial-input:focus {
+  border-color: rgba(37, 99, 235, 0.6);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
 .bg-grid-soft {
   background-image:
     linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getPaymentOption, getShippingOption, parseCheckoutSnapshot } from "@/lib/checkout";
 import { ShoppingBag, TrendingUp } from "@/components/icons";
 import { formatRupiah, formatDate } from "@/lib/utils";
 import OrderStatusSelect from "./OrderStatusSelect";
@@ -118,11 +119,13 @@ export default async function AdminOrdersPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+              <table className="min-w-[1180px] w-full">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
                   <th className="px-6 py-4">ID</th>
                   <th className="px-6 py-4">Pelanggan</th>
+                    <th className="px-6 py-4">Fulfillment</th>
+                    <th className="px-6 py-4">Pembayaran</th>
                   <th className="px-6 py-4">Total</th>
                   <th className="px-6 py-4">Alamat</th>
                   <th className="px-6 py-4">Status</th>
@@ -130,7 +133,21 @@ export default async function AdminOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {orders.map((order) => (
+                {orders.map((order) => {
+                  const checkoutSnapshot = parseCheckoutSnapshot(order.shippingAddress);
+                  const shippingOption = getShippingOption(checkoutSnapshot?.shippingService);
+                  const paymentOption = getPaymentOption(checkoutSnapshot?.paymentMethod);
+                  const recipientName = checkoutSnapshot?.recipientName || order.user.name;
+                  const phoneNumber = checkoutSnapshot?.phoneNumber || "Nomor belum tercatat";
+                  const shippingService = shippingOption?.label || checkoutSnapshot?.shippingService || "Kurir lama";
+                  const paymentMethod = paymentOption?.label || checkoutSnapshot?.paymentMethod || "Metode lama";
+                  const subtotalAmount = checkoutSnapshot?.subtotalAmount || order.totalAmount;
+                  const shippingFee = checkoutSnapshot?.shippingFee || 0;
+                  const serviceFee = checkoutSnapshot?.serviceFee || 0;
+                  const formattedAddress = checkoutSnapshot?.address || order.shippingAddress;
+                  const orderNotes = checkoutSnapshot?.orderNotes;
+
+                  return (
                   <tr key={order.id} className="transition-colors hover:bg-slate-50">
                     <td className="px-6 py-4">
                       <span className="rounded-md bg-slate-100 px-2 py-1 font-mono text-xs text-slate-600">
@@ -148,11 +165,36 @@ export default async function AdminOrdersPage() {
                         </div>
                       </div>
                     </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      <p className="font-semibold text-slate-900">
+                        {recipientName}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {phoneNumber}
+                      </p>
+                      <p className="mt-2 inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-cyan-700">
+                        {shippingService}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      <p className="font-semibold text-slate-900">
+                        {paymentMethod}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Subtotal {formatRupiah(subtotalAmount)}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Ongkir {formatRupiah(shippingFee)} • Layanan {formatRupiah(serviceFee)}
+                      </p>
+                    </td>
                     <td className="px-6 py-4 text-sm font-semibold text-slate-900">
                       {formatRupiah(order.totalAmount)}
                     </td>
                     <td className="max-w-[260px] px-6 py-4 text-sm text-slate-600">
-                      <p className="line-clamp-2 leading-relaxed">{order.shippingAddress}</p>
+                      <p className="line-clamp-2 leading-relaxed">{formattedAddress}</p>
+                      {orderNotes ? (
+                        <p className="mt-2 text-xs text-slate-400">Catatan: {orderNotes}</p>
+                      ) : null}
                     </td>
                     <td className="px-6 py-4">
                       <OrderStatusSelect
@@ -165,7 +207,7 @@ export default async function AdminOrdersPage() {
                       {formatDate(order.createdAt)}
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>

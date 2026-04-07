@@ -53,7 +53,7 @@ const journeyMilestones = [
   {
     year: "2026",
     title: "Ekosistem literasi digital",
-    text: "BookStore berkembang sebagai platform bacaan dengan pengalaman belanja yang cepat.",
+    text: "Erlangmedia berkembang sebagai platform bacaan dengan pengalaman belanja yang cepat.",
   },
 ];
 
@@ -113,7 +113,7 @@ export default async function AboutPage() {
 
                 <div className="relative">
                   <p className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-100">
-                    About BookStore
+                    About Erlangmedia
                   </p>
                   <h1 className="mt-6 text-[clamp(2rem,4.6vw,4rem)] font-black leading-[0.97] tracking-[-0.03em]">
                     Membangun Kultur
@@ -289,7 +289,7 @@ export default async function AboutPage() {
                   Team Spotlight
                 </p>
                 <h2 className="mt-3 text-[clamp(1.9rem,4.2vw,3rem)] font-black leading-[1.02] tracking-[-0.03em]">
-                  Orang di Balik Kurasi BookStore
+                  Orang di Balik Kurasi Erlangmedia
                 </h2>
                 <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
                   Kami adalah tim lintas disiplin yang sama-sama percaya bahwa buku

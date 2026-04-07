@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BookStore - Toko Buku Online Terpercaya",
+  title: "Erlangmedia - Toko Buku Online Terpercaya",
   description:
     "Temukan koleksi buku terlengkap dari berbagai kategori. Belanja buku online dengan harga terbaik dan pengiriman cepat ke seluruh Indonesia.",
 };
 
 /**
- * Root layout aplikasi BookStore.
+ * Root layout aplikasi Erlangmedia.
  * Menampilkan Navbar dan Footer di semua halaman kecuali admin dan auth.
  */
 export default async function RootLayout({

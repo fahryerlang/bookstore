@@ -86,7 +86,7 @@ export default async function UserDashboardPage() {
       label: "Item Keranjang",
       value: cartItemCount,
       icon: ShoppingCart,
-      tone: "from-indigo-500/15 to-indigo-500/5 text-indigo-700",
+      tone: "from-primary/16 to-primary/5 text-primary",
       progress: Math.round((cartItemCount / maxCountStat) * 100),
       progressLabel: `${cartItemCount} item siap checkout`,
     },
@@ -94,7 +94,7 @@ export default async function UserDashboardPage() {
       label: "Total Pesanan",
       value: totalOrderCount,
       icon: LayoutDashboard,
-      tone: "from-sky-500/15 to-sky-500/5 text-sky-700",
+      tone: "from-blue-500/15 to-blue-500/5 text-blue-700",
       progress: Math.round((totalOrderCount / maxCountStat) * 100),
       progressLabel: `${totalOrderCount} transaksi tercatat`,
     },
@@ -118,7 +118,7 @@ export default async function UserDashboardPage() {
       label: "Total Belanja",
       value: formatRupiah(completedSpend),
       icon: Banknote,
-      tone: "from-cyan-500/20 to-cyan-500/5 text-cyan-700",
+      tone: "from-primary/18 to-blue-500/5 text-primary",
       progress: spendingPercent,
       progressLabel: `${spendingPercent}% menuju ${formatRupiah(spendingMilestone)}`,
     },
@@ -141,12 +141,12 @@ export default async function UserDashboardPage() {
   return (
     <div className="space-y-8">
       <section className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_32px_90px_-62px_rgba(15,23,42,0.75)] sm:p-7">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-cyan-200/50 blur-3xl" />
-        <div className="pointer-events-none absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-sky-100/60 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-blue-100/70 blur-3xl" />
 
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
               User Control Center
             </p>
             <h1 className="mt-2 text-[clamp(1.8rem,4vw,2.7rem)] font-black tracking-[-0.03em] text-slate-900">
@@ -158,8 +158,8 @@ export default async function UserDashboardPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-cyan-100 bg-cyan-50/70 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-800">
+          <div className="rounded-2xl border border-primary/15 bg-primary-50/85 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-900">
               Aktivitas Terbaru
             </p>
             <p className="mt-1 text-sm font-semibold text-slate-900">
@@ -171,7 +171,7 @@ export default async function UserDashboardPage() {
         <div className="relative mt-6 flex flex-wrap gap-3">
           <Link
             href="/dashboard/books"
-            className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-cyan-700"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-primary-dark"
           >
             <Sparkles className="h-3.5 w-3.5" />
             Jelajah Buku
@@ -179,14 +179,14 @@ export default async function UserDashboardPage() {
 
           <Link
             href="/cart"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-cyan-300 hover:text-cyan-700"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
           >
             Kelola Keranjang
           </Link>
 
           <Link
             href="/dashboard/profile"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-cyan-300 hover:text-cyan-700"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
           >
             Profil Saya
           </Link>
@@ -220,7 +220,7 @@ export default async function UserDashboardPage() {
 
                 <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
                   <span
-                    className="block h-full rounded-full bg-gradient-to-r from-cyan-500 to-sky-500"
+                    className="block h-full rounded-full bg-gradient-to-r from-primary to-blue-500"
                     style={{ width: progressWidth }}
                   />
                 </div>
@@ -251,7 +251,7 @@ export default async function UserDashboardPage() {
 
             <Link
               href="/checkout"
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-cyan-300 hover:text-cyan-700"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
             >
               Lanjut Checkout
               <ArrowRight className="h-3.5 w-3.5" />
@@ -269,7 +269,7 @@ export default async function UserDashboardPage() {
               </p>
               <Link
                 href="/dashboard/books"
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-cyan-700"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-primary-dark"
               >
                 Buka Katalog
                 <BookOpen className="h-3.5 w-3.5" />
@@ -280,7 +280,7 @@ export default async function UserDashboardPage() {
               {latestOrders.map((order) => (
                 <article
                   key={order.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-cyan-300 hover:bg-cyan-50/40"
+                  className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-primary/25 hover:bg-primary-50/35"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -321,26 +321,26 @@ export default async function UserDashboardPage() {
           <div className="mt-5 space-y-3">
             <Link
               href="/cart"
-              className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-cyan-300 hover:bg-white"
+              className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-primary/35 hover:bg-white"
             >
               <span className="text-sm font-semibold text-slate-800">Kelola Keranjang</span>
-              <ShoppingCart className="h-4 w-4 text-slate-400 transition group-hover:text-cyan-700" />
+              <ShoppingCart className="h-4 w-4 text-slate-400 transition group-hover:text-primary" />
             </Link>
 
             <Link
               href="/contact"
-              className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-cyan-300 hover:bg-white"
+              className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-primary/35 hover:bg-white"
             >
               <span className="text-sm font-semibold text-slate-800">Hubungi Admin</span>
-              <MessageSquare className="h-4 w-4 text-slate-400 transition group-hover:text-cyan-700" />
+              <MessageSquare className="h-4 w-4 text-slate-400 transition group-hover:text-primary" />
             </Link>
 
             <Link
               href="/dashboard/profile"
-              className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-cyan-300 hover:bg-white"
+              className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-primary/35 hover:bg-white"
             >
               <span className="text-sm font-semibold text-slate-800">Lihat Profil</span>
-              <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:text-cyan-700" />
+              <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:text-primary" />
             </Link>
           </div>
         </aside>
@@ -357,7 +357,7 @@ export default async function UserDashboardPage() {
 
           <Link
             href="/dashboard/books"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-cyan-300 hover:text-cyan-700"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
           >
             Lihat Semua
             <ArrowRight className="h-3.5 w-3.5" />
@@ -371,7 +371,7 @@ export default async function UserDashboardPage() {
             {featuredBooks.map((book) => (
               <article
                 key={book.id}
-                className="group flex w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-44px_rgba(15,23,42,0.65)] transition duration-200 hover:-translate-y-1 hover:border-cyan-300 sm:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.75rem)]"
+                className="group flex w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-44px_rgba(15,23,42,0.65)] transition duration-200 hover:-translate-y-1 hover:border-primary/30 sm:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.75rem)]"
               >
                 <div className="relative aspect-[5/4] overflow-hidden border-b border-slate-200 bg-slate-100">
                   <Image
@@ -384,7 +384,7 @@ export default async function UserDashboardPage() {
                 </div>
 
                 <div className="flex flex-1 flex-col p-4">
-                  <span className="inline-flex w-fit rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-800">
+                  <span className="inline-flex w-fit rounded-full border border-primary/20 bg-primary-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-900">
                     {book.category.name}
                   </span>
 
@@ -410,7 +410,7 @@ export default async function UserDashboardPage() {
 
                     <Link
                       href={`/books/${book.id}`}
-                      className="rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-cyan-800 transition hover:bg-cyan-100"
+                      className="rounded-lg border border-primary/30 bg-primary-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-primary-900 transition hover:bg-primary-100"
                     >
                       Detail
                     </Link>

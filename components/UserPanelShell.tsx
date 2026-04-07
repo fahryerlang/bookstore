@@ -21,16 +21,16 @@ interface UserPanelShellProps {
 
 export default function UserPanelShell({ user, children }: UserPanelShellProps) {
   return (
-    <div className="flex min-h-screen overflow-hidden bg-grid-soft bg-[radial-gradient(circle_at_top,_#e8f8ff_0%,_#f4fbff_36%,_#ffffff_72%)]">
+    <div className="flex h-screen gap-4 overflow-hidden bg-grid-soft bg-[radial-gradient(circle_at_top,_#edf5ff_0%,_#f8fbff_32%,_#ffffff_68%)] p-3 sm:p-4">
       <UserSidebar user={user} />
 
-      <div className="relative flex min-h-screen flex-1 flex-col overflow-x-hidden overflow-y-auto">
-        <div className="pointer-events-none absolute -left-24 top-20 h-72 w-72 rounded-full bg-cyan-200/35 blur-3xl animate-drift-slow" />
-        <div className="pointer-events-none absolute -right-16 top-[22rem] h-80 w-80 rounded-full bg-sky-200/35 blur-3xl animate-drift" />
+      <div className="relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto rounded-[32px] border border-white/70 bg-white/58 shadow-[0_38px_95px_-65px_rgba(15,23,42,0.68)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute -left-24 top-20 h-72 w-72 rounded-full bg-primary/15 blur-3xl animate-drift-slow" />
+        <div className="pointer-events-none absolute -right-16 top-[22rem] h-80 w-80 rounded-full bg-blue-200/30 blur-3xl animate-drift" />
 
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-slate-200 bg-white/88 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-white/70 bg-white/78 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 text-sm text-slate-600">
-            <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-cyan-50 text-cyan-700">
+            <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-50 text-primary">
               <Clock className="h-4 w-4" />
             </div>
             <div>
@@ -51,14 +51,14 @@ export default function UserPanelShell({ user, children }: UserPanelShellProps) 
           <div className="hidden items-center gap-2 md:flex">
             <Link
               href="/dashboard/books"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-cyan-300 hover:text-cyan-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/92 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
             >
               <Sparkles className="h-3.5 w-3.5" />
               Jelajah Buku
             </Link>
             <Link
               href="/cart"
-              className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-cyan-300 hover:text-cyan-700"
+              className="inline-flex items-center rounded-xl border border-slate-200 bg-white/92 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
             >
               Keranjang
             </Link>
@@ -66,19 +66,19 @@ export default function UserPanelShell({ user, children }: UserPanelShellProps) 
 
           <Link
             href="/dashboard/profile"
-            className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-[0_18px_45px_-36px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:bg-cyan-50/70 hover:shadow-[0_24px_55px_-38px_rgba(15,23,42,0.5)]"
+            className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/92 px-3 py-2 shadow-[0_18px_45px_-36px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/60 hover:shadow-[0_24px_55px_-38px_rgba(15,23,42,0.5)]"
           >
             <div className="text-right">
               <p className="text-sm font-semibold text-slate-900">{user.name}</p>
               <p className="text-xs text-slate-500">{user.email}</p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-300/50 bg-cyan-50 transition group-hover:border-cyan-400/70 group-hover:bg-cyan-600">
-              <User className="h-4 w-4 text-cyan-700 transition group-hover:text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/20 bg-primary-50 transition group-hover:border-primary/30 group-hover:bg-primary">
+              <User className="h-4 w-4 text-primary transition group-hover:text-white" />
             </div>
           </Link>
         </header>
 
-        <nav className="relative z-20 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:hidden sm:px-6">
+        <nav className="relative z-20 border-b border-white/70 bg-white/84 px-4 py-3 backdrop-blur lg:hidden sm:px-6">
           <div className="flex gap-2 overflow-x-auto pb-1">
             {mobileNavItems.map((item) => (
               <Link

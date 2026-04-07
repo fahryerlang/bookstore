@@ -43,7 +43,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
       <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-60px_rgba(15,23,42,0.7)] sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
               Curated Shelves
             </p>
             <h1 className="mt-2 text-[clamp(1.8rem,4vw,2.7rem)] font-black tracking-[-0.03em] text-slate-900">
@@ -54,7 +54,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-cyan-800">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-900">
             <Sparkles className="h-3.5 w-3.5" />
             {books.length} buku ditemukan
           </div>
@@ -87,7 +87,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
 
           <button
             type="submit"
-            className="h-11 rounded-xl bg-cyan-600 px-5 text-sm font-semibold text-white transition hover:bg-cyan-700"
+            className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white transition hover:bg-primary-dark"
           >
             Terapkan Filter
           </button>
@@ -98,8 +98,8 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
             href={buildBooksHref(q)}
             className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition ${
               !category
-                ? "border-cyan-300 bg-cyan-50 text-cyan-800"
-                : "border-slate-200 bg-white text-slate-600 hover:border-cyan-200 hover:text-cyan-700"
+                ? "border-primary/30 bg-primary-50 text-primary-900"
+                : "border-slate-200 bg-white text-slate-600 hover:border-primary/25 hover:text-primary"
             }`}
           >
             Semua
@@ -113,8 +113,8 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
                 href={buildBooksHref(q, item.id)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition ${
                   active
-                    ? "border-cyan-300 bg-cyan-50 text-cyan-800"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-cyan-200 hover:text-cyan-700"
+                    ? "border-primary/30 bg-primary-50 text-primary-900"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-primary/25 hover:text-primary"
                 }`}
               >
                 {item.name}
@@ -138,7 +138,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
             {books.map((book) => (
               <article
                 key={book.id}
-                className="group flex w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-44px_rgba(15,23,42,0.65)] transition duration-200 hover:-translate-y-1 hover:border-cyan-300 sm:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.75rem)]"
+                className="group flex w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-44px_rgba(15,23,42,0.65)] transition duration-200 hover:-translate-y-1 hover:border-primary/30 sm:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.75rem)]"
               >
                 <div className="relative aspect-[5/4] overflow-hidden border-b border-slate-200 bg-slate-100">
                   <Image
@@ -151,7 +151,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
                 </div>
 
                 <div className="flex flex-1 flex-col p-4">
-                  <span className="inline-flex w-fit rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-800">
+                  <span className="inline-flex w-fit rounded-full border border-primary/20 bg-primary-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-900">
                     {book.category.name}
                   </span>
 
@@ -176,7 +176,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
 
                     <Link
                       href={`/books/${book.id}`}
-                      className="rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-cyan-800 transition hover:bg-cyan-100"
+                      className="rounded-lg border border-primary/30 bg-primary-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-primary-900 transition hover:bg-primary-100"
                     >
                       Detail
                     </Link>

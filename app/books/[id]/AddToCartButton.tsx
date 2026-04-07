@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, Loader2 } from "@/components/icons";
+import { CheckCircle, Loader2, ShoppingCart } from "@/components/icons";
 import { addToCart } from "@/lib/actions/cart";
 import { useState, useTransition } from "react";
 
@@ -17,7 +17,7 @@ interface AddToCartButtonProps {
  */
 export default function AddToCartButton({ bookId, inStock }: AddToCartButtonProps) {
   const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState("");
+  const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   /**
    * Menangani klik tombol tambah ke keranjang.
@@ -25,17 +25,17 @@ export default function AddToCartButton({ bookId, inStock }: AddToCartButtonProp
   function handleClick() {
     startTransition(async () => {
       const result = await addToCart(bookId);
-      setMessage(result.message);
-      setTimeout(() => setMessage(""), 3000);
+      setFeedback(result);
+      setTimeout(() => setFeedback(null), 3000);
     });
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       <button
         onClick={handleClick}
         disabled={!inStock || isPending}
-        className="w-full bg-indigo-600 text-white py-3.5 px-6 rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending ? (
           <Loader2 className="h-5 w-5 animate-spin" />
@@ -48,11 +48,25 @@ export default function AddToCartButton({ bookId, inStock }: AddToCartButtonProp
           ? "Tambah ke Keranjang"
           : "Stok Habis"}
       </button>
-      {message && (
-        <p className="mt-3 text-center text-sm font-medium text-green-600">
-          {message}
-        </p>
-      )}
+
+      <div className="rounded-[22px] border border-slate-200 bg-slate-50/80 px-4 py-3 text-xs leading-relaxed text-slate-500">
+        Satu klik untuk menaruh buku ini ke keranjang, lalu Anda bisa lanjut ke checkout kapan saja.
+      </div>
+
+      {feedback ? (
+        <div
+          className={`rounded-[22px] border px-4 py-3 text-sm ${
+            feedback.success
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-rose-200 bg-rose-50 text-rose-700"
+          }`}
+        >
+          <div className="flex items-start gap-2">
+            {feedback.success ? <CheckCircle className="mt-0.5 h-4 w-4" /> : <ShoppingCart className="mt-0.5 h-4 w-4" />}
+            <p>{feedback.message}</p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
