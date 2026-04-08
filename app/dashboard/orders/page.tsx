@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { getPaymentOption, getShippingOption, parseCheckoutSnapshot } from "@/lib/checkout";
+import { paymentStatusLabels, resolveOrderPresentation } from "@/lib/orders";
 import { formatDate, formatRupiah } from "@/lib/utils";
 import {
   ArrowRight,
@@ -131,17 +131,7 @@ export default async function UserOrderHistoryPage() {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => {
-            const checkoutSnapshot = parseCheckoutSnapshot(order.shippingAddress);
-            const paymentOption = getPaymentOption(checkoutSnapshot?.paymentMethod);
-            const shippingOption = getShippingOption(checkoutSnapshot?.shippingService);
-            const recipientName = checkoutSnapshot?.recipientName || session.name;
-            const phoneNumber = checkoutSnapshot?.phoneNumber || "Nomor belum tercatat";
-            const shippingAddress = checkoutSnapshot?.address || order.shippingAddress;
-            const paymentLabel = paymentOption?.label || checkoutSnapshot?.paymentMethod || "Metode belum tercatat";
-            const shippingLabel = shippingOption?.label || checkoutSnapshot?.shippingService || "Kurir belum tercatat";
-            const subtotalAmount = checkoutSnapshot?.subtotalAmount || order.totalAmount;
-            const shippingFee = checkoutSnapshot?.shippingFee || 0;
-            const serviceFee = checkoutSnapshot?.serviceFee || 0;
+            const orderPresentation = resolveOrderPresentation(order, session);
 
             return (
               <article
@@ -152,7 +142,7 @@ export default async function UserOrderHistoryPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                        #{order.id.slice(0, 8)}
+                        {orderPresentation.orderNumber}
                       </span>
                       <span
                         className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${
@@ -161,12 +151,15 @@ export default async function UserOrderHistoryPage() {
                       >
                         {statusLabels[order.status] ?? order.status}
                       </span>
+                      <span className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-700">
+                        {paymentStatusLabels[orderPresentation.paymentStatus]}
+                      </span>
                     </div>
                     <h2 className="mt-4 text-xl font-semibold tracking-[-0.03em] text-slate-900">
-                      Pesanan untuk {recipientName}
+                      Pesanan untuk {orderPresentation.recipientName}
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                      Dibuat pada {formatDate(order.createdAt)} • {phoneNumber}
+                      Dibuat pada {formatDate(order.createdAt)} • {orderPresentation.phoneNumber}
                     </p>
                   </div>
 
@@ -192,7 +185,7 @@ export default async function UserOrderHistoryPage() {
                       </div>
                     </div>
                     <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-600">
-                      {shippingAddress}
+                      {orderPresentation.shippingAddress}
                     </p>
                   </div>
 
@@ -204,7 +197,7 @@ export default async function UserOrderHistoryPage() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-slate-900">Pembayaran</p>
-                          <p className="mt-1 text-sm text-slate-600">{paymentLabel}</p>
+                          <p className="mt-1 text-sm text-slate-600">{orderPresentation.paymentMethodLabel}</p>
                         </div>
                       </div>
                     </div>
@@ -215,7 +208,7 @@ export default async function UserOrderHistoryPage() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-slate-900">Pengiriman</p>
-                          <p className="mt-1 text-sm text-slate-600">{shippingLabel}</p>
+                          <p className="mt-1 text-sm text-slate-600">{orderPresentation.shippingMethodLabel}</p>
                         </div>
                       </div>
                     </div>
@@ -228,15 +221,15 @@ export default async function UserOrderHistoryPage() {
                     <div className="mt-4 space-y-3 text-sm text-slate-600">
                       <div className="flex items-center justify-between">
                         <span>Subtotal buku</span>
-                        <span className="font-semibold text-slate-900">{formatRupiah(subtotalAmount)}</span>
+                        <span className="font-semibold text-slate-900">{formatRupiah(orderPresentation.subtotalAmount)}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Ongkir</span>
-                        <span className="font-semibold text-slate-900">{formatRupiah(shippingFee)}</span>
+                        <span className="font-semibold text-slate-900">{formatRupiah(orderPresentation.shippingFeeAmount)}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Biaya layanan</span>
-                        <span className="font-semibold text-slate-900">{formatRupiah(serviceFee)}</span>
+                        <span className="font-semibold text-slate-900">{formatRupiah(orderPresentation.serviceFeeAmount)}</span>
                       </div>
                     </div>
                     <div className="mt-4 rounded-[20px] border border-primary/10 bg-primary-50 px-4 py-3">
@@ -250,7 +243,7 @@ export default async function UserOrderHistoryPage() {
                   </div>
                 </div>
 
-                {checkoutSnapshot?.orderNotes ? (
+                {orderPresentation.orderNotes ? (
                   <div className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-50 text-primary">
@@ -259,7 +252,7 @@ export default async function UserOrderHistoryPage() {
                       <div>
                         <p className="text-sm font-semibold text-slate-900">Catatan pesanan</p>
                         <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                          {checkoutSnapshot.orderNotes}
+                          {orderPresentation.orderNotes}
                         </p>
                       </div>
                     </div>
@@ -267,6 +260,14 @@ export default async function UserOrderHistoryPage() {
                 ) : null}
 
                 <div className="mt-5 flex flex-wrap gap-3">
+                  <Link
+                    href={`/dashboard/orders/${order.id}/invoice`}
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-primary-dark"
+                  >
+                    Lihat Invoice
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+
                   <Link
                     href={`/checkout/success?order=${order.id}`}
                     className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary hover:text-primary"

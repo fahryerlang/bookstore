@@ -32,6 +32,7 @@ export const Minus = createIcon("lucide:minus");
 export const Package = createIcon("lucide:package");
 export const Pencil = createIcon("lucide:pencil");
 export const Phone = createIcon("lucide:phone");
+export const Printer = createIcon("lucide:printer");
 export const Plus = createIcon("lucide:plus");
 export const Search = createIcon("lucide:search");
 export const Shield = createIcon("lucide:shield");

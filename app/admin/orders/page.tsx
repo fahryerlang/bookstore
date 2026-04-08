@@ -1,8 +1,9 @@
 import prisma from "@/lib/prisma";
-import { getPaymentOption, getShippingOption, parseCheckoutSnapshot } from "@/lib/checkout";
 import { ShoppingBag, TrendingUp } from "@/components/icons";
 import { formatRupiah, formatDate } from "@/lib/utils";
+import { paymentStatusLabels, resolveOrderPresentation } from "@/lib/orders";
 import OrderStatusSelect from "./OrderStatusSelect";
+import Link from "next/link";
 
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({
@@ -32,8 +33,14 @@ export default async function AdminOrdersPage() {
     }
   );
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-  const averageOrderValue = orders.length > 0 ? Math.round(totalRevenue / orders.length) : 0;
+  const totalRevenue = orders.reduce((sum, order) => {
+    const paymentStatus = resolveOrderPresentation(order, order.user).paymentStatus;
+    return paymentStatus === "PAID" ? sum + order.totalAmount : sum;
+  }, 0);
+  const paidOrderCount = orders.filter(
+    (order) => resolveOrderPresentation(order, order.user).paymentStatus === "PAID"
+  ).length;
+  const averageOrderValue = paidOrderCount > 0 ? Math.round(totalRevenue / paidOrderCount) : 0;
   const completionRate =
     orders.length > 0
       ? Math.round((statusCount.COMPLETED / orders.length) * 100)
@@ -66,10 +73,10 @@ export default async function AdminOrdersPage() {
             </article>
             <article className="rounded-2xl border border-primary/20 bg-primary-50 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-                Pendapatan Kotor
+                Pendapatan Terkonfirmasi
               </p>
               <p className="mt-1 text-2xl font-bold text-slate-900">{formatRupiah(totalRevenue)}</p>
-              <p className="mt-1 text-xs text-slate-600">Dari semua pesanan</p>
+              <p className="mt-1 text-xs text-slate-600">Dari order yang sudah dianggap lunas</p>
             </article>
             <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
@@ -134,24 +141,13 @@ export default async function AdminOrdersPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {orders.map((order) => {
-                  const checkoutSnapshot = parseCheckoutSnapshot(order.shippingAddress);
-                  const shippingOption = getShippingOption(checkoutSnapshot?.shippingService);
-                  const paymentOption = getPaymentOption(checkoutSnapshot?.paymentMethod);
-                  const recipientName = checkoutSnapshot?.recipientName || order.user.name;
-                  const phoneNumber = checkoutSnapshot?.phoneNumber || "Nomor belum tercatat";
-                  const shippingService = shippingOption?.label || checkoutSnapshot?.shippingService || "Kurir lama";
-                  const paymentMethod = paymentOption?.label || checkoutSnapshot?.paymentMethod || "Metode lama";
-                  const subtotalAmount = checkoutSnapshot?.subtotalAmount || order.totalAmount;
-                  const shippingFee = checkoutSnapshot?.shippingFee || 0;
-                  const serviceFee = checkoutSnapshot?.serviceFee || 0;
-                  const formattedAddress = checkoutSnapshot?.address || order.shippingAddress;
-                  const orderNotes = checkoutSnapshot?.orderNotes;
+                  const orderPresentation = resolveOrderPresentation(order, order.user);
 
                   return (
                   <tr key={order.id} className="transition-colors hover:bg-slate-50">
                     <td className="px-6 py-4">
                       <span className="rounded-md bg-slate-100 px-2 py-1 font-mono text-xs text-slate-600">
-                        #{order.id.slice(0, 8)}
+                        {orderPresentation.orderNumber}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -167,41 +163,52 @@ export default async function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
                       <p className="font-semibold text-slate-900">
-                        {recipientName}
+                        {orderPresentation.recipientName}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
-                        {phoneNumber}
+                        {orderPresentation.phoneNumber}
                       </p>
                       <p className="mt-2 inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-cyan-700">
-                        {shippingService}
+                        {orderPresentation.shippingMethodLabel}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
                       <p className="font-semibold text-slate-900">
-                        {paymentMethod}
+                        {orderPresentation.paymentMethodLabel}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        {paymentStatusLabels[orderPresentation.paymentStatus]}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
-                        Subtotal {formatRupiah(subtotalAmount)}
+                        Subtotal {formatRupiah(orderPresentation.subtotalAmount)}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
-                        Ongkir {formatRupiah(shippingFee)} • Layanan {formatRupiah(serviceFee)}
+                        Ongkir {formatRupiah(orderPresentation.shippingFeeAmount)} • Layanan {formatRupiah(orderPresentation.serviceFeeAmount)}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-slate-900">
                       {formatRupiah(order.totalAmount)}
                     </td>
                     <td className="max-w-[260px] px-6 py-4 text-sm text-slate-600">
-                      <p className="line-clamp-2 leading-relaxed">{formattedAddress}</p>
-                      {orderNotes ? (
-                        <p className="mt-2 text-xs text-slate-400">Catatan: {orderNotes}</p>
+                      <p className="line-clamp-2 leading-relaxed">{orderPresentation.shippingAddress}</p>
+                      {orderPresentation.orderNotes ? (
+                        <p className="mt-2 text-xs text-slate-400">Catatan: {orderPresentation.orderNotes}</p>
                       ) : null}
                     </td>
                     <td className="px-6 py-4">
-                      <OrderStatusSelect
-                        orderId={order.id}
-                        currentStatus={order.status}
-                        statusLabels={statusLabels}
-                      />
+                      <div className="space-y-2">
+                        <OrderStatusSelect
+                          orderId={order.id}
+                          currentStatus={order.status}
+                          statusLabels={statusLabels}
+                        />
+                        <Link
+                          href={`/admin/orders/${order.id}/invoice`}
+                          className="inline-flex rounded-lg border border-primary/20 bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary-100"
+                        >
+                          Buka Invoice
+                        </Link>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500">
                       {formatDate(order.createdAt)}

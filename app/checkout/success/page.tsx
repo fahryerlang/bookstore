@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
-import { getPaymentOption, getShippingOption, parseCheckoutSnapshot } from "@/lib/checkout";
+import { resolveOrderPresentation } from "@/lib/orders";
 import { formatDate, formatRupiah } from "@/lib/utils";
 import {
   ArrowRight,
@@ -30,6 +30,13 @@ export default async function CheckoutSuccessPage({
   if (order) {
     latestOrder = await prisma.order.findFirst({
       where: { id: order, userId: session.id },
+      include: {
+        invoices: {
+          take: 1,
+          orderBy: { createdAt: "desc" },
+          select: { id: true, invoiceNumber: true },
+        },
+      },
     });
   }
 
@@ -37,21 +44,29 @@ export default async function CheckoutSuccessPage({
     latestOrder = await prisma.order.findFirst({
       where: { userId: session.id },
       orderBy: { createdAt: "desc" },
+      include: {
+        invoices: {
+          take: 1,
+          orderBy: { createdAt: "desc" },
+          select: { id: true, invoiceNumber: true },
+        },
+      },
     });
   }
 
-  const checkoutSnapshot = parseCheckoutSnapshot(latestOrder?.shippingAddress);
-  const paymentOption = getPaymentOption(checkoutSnapshot?.paymentMethod);
-  const shippingOption = getShippingOption(checkoutSnapshot?.shippingService);
-  const recipientName = checkoutSnapshot?.recipientName || session.name;
-  const contactEmail = checkoutSnapshot?.contactEmail || session.email;
-  const phoneNumber = checkoutSnapshot?.phoneNumber || "Belum tercatat";
-  const paymentMethod = paymentOption?.label || checkoutSnapshot?.paymentMethod || "Metode belum tercatat";
-  const shippingService = shippingOption?.label || checkoutSnapshot?.shippingService || "Kurir belum tercatat";
-  const shippingAddress = checkoutSnapshot?.address || latestOrder?.shippingAddress || "Alamat belum tersedia.";
-  const subtotalAmount = checkoutSnapshot?.subtotalAmount || latestOrder?.totalAmount || 0;
-  const shippingFee = checkoutSnapshot?.shippingFee || 0;
-  const serviceFee = checkoutSnapshot?.serviceFee || 0;
+  const orderPresentation = latestOrder
+    ? resolveOrderPresentation(latestOrder, session)
+    : null;
+  const latestInvoice = latestOrder?.invoices?.[0] ?? null;
+  const recipientName = orderPresentation?.recipientName ?? session.name;
+  const contactEmail = orderPresentation?.contactEmail ?? session.email;
+  const phoneNumber = orderPresentation?.phoneNumber ?? "Belum tercatat";
+  const paymentMethod = orderPresentation?.paymentMethodLabel ?? "Metode belum tercatat";
+  const shippingService = orderPresentation?.shippingMethodLabel ?? "Kurir belum tercatat";
+  const shippingAddress = orderPresentation?.shippingAddress ?? "Alamat belum tersedia.";
+  const subtotalAmount = orderPresentation?.subtotalAmount ?? latestOrder?.totalAmount ?? 0;
+  const shippingFee = orderPresentation?.shippingFeeAmount ?? 0;
+  const serviceFee = orderPresentation?.serviceFeeAmount ?? 0;
   const totalAmount = latestOrder?.totalAmount || 0;
   const needsPaymentFollowUp = latestOrder?.status === "PENDING_PAYMENT";
 
@@ -157,13 +172,13 @@ export default async function CheckoutSuccessPage({
                 {shippingAddress}
               </p>
 
-              {checkoutSnapshot?.orderNotes ? (
+              {orderPresentation?.orderNotes ? (
                 <div className="mt-5 rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                     Catatan Pesanan
                   </p>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                    {checkoutSnapshot.orderNotes}
+                    {orderPresentation.orderNotes}
                   </p>
                 </div>
               ) : null}
@@ -200,6 +215,16 @@ export default async function CheckoutSuccessPage({
         </section>
 
         <aside className="space-y-4">
+          {latestOrder && latestInvoice ? (
+            <Link
+              href={`/dashboard/orders/${latestOrder.id}/invoice`}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-primary-dark"
+            >
+              Lihat Invoice {latestInvoice.invoiceNumber}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          ) : null}
+
           <section className="editorial-surface rounded-[24px] p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
               Next Step

@@ -4,10 +4,10 @@ import { formatDate, formatRupiah } from "@/lib/utils";
 import {
   getPaymentOption,
   getShippingOption,
-  parseCheckoutSnapshot,
   paymentOptions,
   shippingOptions,
 } from "@/lib/checkout";
+import { parseStoredCheckoutSnapshot } from "@/lib/orders";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -63,13 +63,20 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     prisma.order.findFirst({
       where: { userId: session.id },
       orderBy: { createdAt: "desc" },
-      select: { createdAt: true, shippingAddress: true },
+      select: {
+        createdAt: true,
+        shippingAddress: true,
+        rawCheckoutSnapshot: true,
+      },
     }),
   ]);
 
   if (cartItems.length === 0) redirect("/cart");
 
-  const latestCheckout = parseCheckoutSnapshot(latestOrder?.shippingAddress);
+  const latestCheckout = parseStoredCheckoutSnapshot(
+    latestOrder?.rawCheckoutSnapshot,
+    latestOrder?.shippingAddress
+  );
   const latestShipping = getShippingOption(latestCheckout?.shippingService);
   const latestPayment = getPaymentOption(latestCheckout?.paymentMethod);
   const defaultCheckout = latestCheckout && latestOrder

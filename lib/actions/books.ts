@@ -128,6 +128,7 @@ export async function createBook(
   const author = String(formData.get("author") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const price = Number(formData.get("price"));
+  const costPrice = Number(formData.get("costPrice"));
   const stock = Number(formData.get("stock"));
   const categoryId = String(formData.get("categoryId") ?? "").trim();
 
@@ -135,8 +136,15 @@ export async function createBook(
     return { success: false, message: "Semua kolom wajib diisi." };
   }
 
-  if (!Number.isInteger(price) || !Number.isInteger(stock) || price <= 0 || stock < 0) {
-    return { success: false, message: "Harga dan stok harus valid." };
+  if (
+    !Number.isInteger(price) ||
+    !Number.isInteger(costPrice) ||
+    !Number.isInteger(stock) ||
+    price <= 0 ||
+    costPrice < 0 ||
+    stock < 0
+  ) {
+    return { success: false, message: "Harga jual, harga modal, dan stok harus valid." };
   }
 
   const resolvedImage = await resolveBookImageSource(formData, title);
@@ -155,6 +163,7 @@ export async function createBook(
         author,
         description,
         price,
+        costPrice,
         stock,
         imageUrl: resolvedImage.imageUrl,
         categoryId,
@@ -164,6 +173,7 @@ export async function createBook(
     revalidatePath("/admin/books");
     revalidatePath("/dashboard/books");
     revalidatePath("/dashboard");
+    revalidatePath("/admin/reports");
     revalidatePath("/");
     return { success: true, message: "Buku berhasil ditambahkan." };
   } catch (error) {
@@ -195,6 +205,7 @@ export async function updateBook(
   const author = String(formData.get("author") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const price = Number(formData.get("price"));
+  const costPrice = Number(formData.get("costPrice"));
   const stock = Number(formData.get("stock"));
   const categoryId = String(formData.get("categoryId") ?? "").trim();
 
@@ -202,8 +213,15 @@ export async function updateBook(
     return { success: false, message: "Semua kolom wajib diisi." };
   }
 
-  if (!Number.isInteger(price) || !Number.isInteger(stock) || price <= 0 || stock < 0) {
-    return { success: false, message: "Harga dan stok harus valid." };
+  if (
+    !Number.isInteger(price) ||
+    !Number.isInteger(costPrice) ||
+    !Number.isInteger(stock) ||
+    price <= 0 ||
+    costPrice < 0 ||
+    stock < 0
+  ) {
+    return { success: false, message: "Harga jual, harga modal, dan stok harus valid." };
   }
 
   let uploadedImageUrl: string | undefined;
@@ -234,6 +252,7 @@ export async function updateBook(
         author,
         description,
         price,
+        costPrice,
         stock,
         imageUrl: resolvedImage.imageUrl,
         categoryId,
@@ -247,6 +266,7 @@ export async function updateBook(
     revalidatePath("/admin/books");
     revalidatePath("/dashboard/books");
     revalidatePath("/dashboard");
+    revalidatePath("/admin/reports");
     revalidatePath("/");
     revalidatePath(`/books/${id}`);
     return { success: true, message: "Buku berhasil diperbarui." };
@@ -281,6 +301,7 @@ export async function deleteBook(id: string) {
     revalidatePath("/admin/books");
     revalidatePath("/dashboard/books");
     revalidatePath("/dashboard");
+    revalidatePath("/admin/reports");
     revalidatePath("/");
     return { success: true, message: "Buku berhasil dihapus." };
   } catch (error) {

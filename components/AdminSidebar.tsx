@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   MessageSquare,
   LogOut,
+  TrendingUp,
 } from "@/components/icons";
 import BrandLogo from "@/components/BrandLogo";
 import { logoutUser } from "@/lib/actions/auth";
@@ -22,6 +23,7 @@ const menuItems = [
   { href: "/admin/books", label: "Buku", icon: BookOpen },
   { href: "/admin/users", label: "Pengguna", icon: Users },
   { href: "/admin/orders", label: "Pesanan", icon: ShoppingBag },
+  { href: "/admin/reports", label: "Laporan", icon: TrendingUp },
   { href: "/admin/messages", label: "Kontak", icon: MessageSquare },
 ];
 

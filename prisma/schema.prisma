@@ -19,6 +19,29 @@ enum OrderStatus {
   COMPLETED
 }
 
+enum PaymentStatus {
+  UNPAID
+  COD_PENDING
+  PAID
+}
+
+enum InvoiceStatus {
+  ISSUED
+  SENT
+  PAID
+  VOID
+}
+
+enum DataCompleteness {
+  FULL
+  LEGACY_PARTIAL
+}
+
+enum DocumentType {
+  ORDER
+  INVOICE
+}
+
 model User {
   id        String    @id @default(uuid())
   name      String
@@ -46,11 +69,13 @@ model Book {
   author      String?
   description String     @db.Text
   price       Int
+  costPrice   Int        @default(0)
   stock       Int
   imageUrl    String
   categoryId  String
-  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   cartItems   CartItem[]
+  orderItems  OrderItem[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -67,14 +92,172 @@ model CartItem {
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  totalAmount     Int
-  status          OrderStatus @default(PENDING_PAYMENT)
-  shippingAddress String      @db.Text
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                  String           @id @default(uuid())
+  orderNumber         String?          @unique
+  userId              String
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalAmount         Int
+  subtotalAmount      Int              @default(0)
+  discountAmount      Int              @default(0)
+  shippingFeeAmount   Int              @default(0)
+  serviceFeeAmount    Int              @default(0)
+  taxAmount           Int              @default(0)
+  status              OrderStatus      @default(PENDING_PAYMENT)
+  paymentStatus       PaymentStatus?
+  billingName         String?
+  billingEmail        String?
+  billingPhone        String?
+  billingAddress      String?          @db.Text
+  shippingName        String?
+  shippingEmail       String?
+  shippingPhone       String?
+  shippingAddress     String           @db.Text
+  paymentMethodId     String?
+  paymentMethodLabel  String?
+  shippingMethodId    String?
+  shippingMethodLabel String?
+  notes               String?          @db.Text
+  rawCheckoutSnapshot String?          @db.Text
+  dataCompleteness    DataCompleteness @default(LEGACY_PARTIAL)
+  paidAt              DateTime?
+  completedAt         DateTime?
+  items               OrderItem[]
+  invoices            Invoice[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([paymentStatus, createdAt])
+}
+
+model OrderItem {
+  id                  String        @id @default(uuid())
+  orderId             String
+  order               Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId              String?
+  book                Book?         @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  categoryId          String?
+  productTitleSnapshot String
+  authorSnapshot      String?
+  categoryNameSnapshot String?
+  imageUrlSnapshot    String?
+  unitPriceSnapshot   Int
+  unitCostSnapshot    Int           @default(0)
+  quantity            Int
+  lineSubtotal        Int
+  lineDiscountAmount  Int           @default(0)
+  lineTaxAmount       Int           @default(0)
+  lineTotal           Int
+  invoiceItems        InvoiceItem[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([bookId])
+  @@index([categoryId])
+}
+
+model Invoice {
+  id                String        @id @default(uuid())
+  invoiceNumber     String        @unique
+  orderId           String
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status            InvoiceStatus @default(ISSUED)
+  revisionNumber    Int           @default(1)
+  subtotalAmount    Int
+  discountAmount    Int           @default(0)
+  shippingFeeAmount Int           @default(0)
+  serviceFeeAmount  Int           @default(0)
+  taxAmount         Int           @default(0)
+  totalAmount       Int
+  billingName       String?
+  billingEmail      String?
+  billingPhone      String?
+  billingAddress    String?       @db.Text
+  shippingName      String?
+  shippingEmail     String?
+  shippingPhone     String?
+  shippingAddress   String        @db.Text
+  dueDate           DateTime?
+  issuedAt          DateTime      @default(now())
+  sentAt            DateTime?
+  paidAt            DateTime?
+  voidedAt          DateTime?
+  notes             String?       @db.Text
+  pdfUrl            String?
+  items             InvoiceItem[]
+  events            InvoiceEvent[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([status, issuedAt])
+}
+
+model InvoiceItem {
+  id                 String     @id @default(uuid())
+  invoiceId          String
+  invoice            Invoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  orderItemId        String?
+  orderItem          OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  descriptionSnapshot String
+  quantity           Int
+  unitPriceSnapshot  Int
+  lineSubtotal       Int
+  lineDiscountAmount Int        @default(0)
+  lineTaxAmount      Int        @default(0)
+  lineTotal          Int
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  @@index([invoiceId])
+}
+
+model InvoiceEvent {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  eventType   String
+  actorUserId String?
+  actorLabel  String?
+  metadataJson String? @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([invoiceId, createdAt])
+}
+
+model DocumentSequence {
+  id           String       @id @default(uuid())
+  documentType DocumentType
+  periodKey    String
+  lastValue    Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([documentType, periodKey])
+}
+
+model ExpenseCategory {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  expenses  Expense[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Expense {
+  id                String          @id @default(uuid())
+  expenseCategoryId String
+  expenseCategory   ExpenseCategory @relation(fields: [expenseCategoryId], references: [id], onDelete: Restrict)
+  title             String
+  amount            Int
+  notes             String?         @db.Text
+  paidAt            DateTime
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([paidAt])
 }
 
 model Message {

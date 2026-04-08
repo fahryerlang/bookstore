@@ -10,7 +10,8 @@ import {
   ShoppingCart,
 } from "@/components/icons";
 import { requireAuth } from "@/lib/auth";
-import { getPaymentOption, getShippingOption, parseCheckoutSnapshot } from "@/lib/checkout";
+import { getPaymentOption, getShippingOption } from "@/lib/checkout";
+import { parseStoredCheckoutSnapshot } from "@/lib/orders";
 import prisma from "@/lib/prisma";
 import { formatDate, formatRupiah } from "@/lib/utils";
 
@@ -43,7 +44,11 @@ export default async function UserDashboardProfilePage() {
       prisma.order.findFirst({
         where: { userId: session.id },
         orderBy: { createdAt: "desc" },
-        select: { createdAt: true, shippingAddress: true },
+        select: {
+          createdAt: true,
+          shippingAddress: true,
+          rawCheckoutSnapshot: true,
+        },
       }),
     ]);
 
@@ -51,7 +56,10 @@ export default async function UserDashboardProfilePage() {
     redirect("/login");
   }
 
-  const latestCheckout = parseCheckoutSnapshot(latestOrder?.shippingAddress);
+  const latestCheckout = parseStoredCheckoutSnapshot(
+    latestOrder?.rawCheckoutSnapshot,
+    latestOrder?.shippingAddress
+  );
   const latestShipping = getShippingOption(latestCheckout?.shippingService);
   const latestPayment = getPaymentOption(latestCheckout?.paymentMethod);
   const checkoutDefaults = latestCheckout && latestOrder

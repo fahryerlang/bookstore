@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { createBook, updateBook } from "@/lib/actions/books";
+import { createCategoryInline } from "@/lib/actions/categories";
 import {
   Banknote,
   BookOpen,
@@ -9,6 +11,7 @@ import {
   FolderOpen,
   Loader2,
   Package,
+  Plus,
   Sparkles,
   Tag,
   User,
@@ -23,6 +26,7 @@ interface BookFormProps {
     author?: string | null;
     description: string;
     price: number;
+    costPrice: number;
     stock: number;
     imageUrl: string;
     categoryId: string;
@@ -36,16 +40,30 @@ export default function BookForm({ categories, book }: BookFormProps) {
     success: false,
     message: "",
   });
+  const [isCreatingCategory, startCreatingCategory] = useTransition();
 
+  const [categoryOptions, setCategoryOptions] = useState(categories);
   const [title, setTitle] = useState(book?.title ?? "");
   const [author, setAuthor] = useState(book?.author ?? "");
   const [description, setDescription] = useState(book?.description ?? "");
   const [price, setPrice] = useState(book?.price ? String(book.price) : "");
+  const [costPrice, setCostPrice] = useState(book?.costPrice !== undefined ? String(book.costPrice) : "0");
   const [stock, setStock] = useState(book?.stock !== undefined ? String(book.stock) : "");
   const [imageUrl, setImageUrl] = useState(book?.imageUrl ?? "");
   const [categoryId, setCategoryId] = useState(book?.categoryId ?? "");
   const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState("");
   const [selectedCoverName, setSelectedCoverName] = useState("");
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryFeedback, setCategoryFeedback] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -68,12 +86,64 @@ export default function BookForm({ categories, book }: BookFormProps) {
     });
   }
 
-  const hasCategories = categories.length > 0;
+  function closeCategoryDialog() {
+    if (isCreatingCategory) {
+      return;
+    }
+
+    setIsCategoryDialogOpen(false);
+    setNewCategoryName("");
+    setCategoryFeedback(null);
+  }
+
+  function handleCreateCategory(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setCategoryFeedback(null);
+
+    startCreatingCategory(async () => {
+      const result = await createCategoryInline(newCategoryName);
+
+      if (!result.success || !result.category) {
+        setCategoryFeedback({
+          success: false,
+          message: result.message,
+        });
+        return;
+      }
+
+      const createdCategory = result.category;
+
+      setCategoryOptions((currentValue) => {
+        const existingCategory = currentValue.find((item) => item.id === createdCategory.id);
+
+        if (existingCategory) {
+          return currentValue;
+        }
+
+        return [...currentValue, createdCategory].sort((left, right) =>
+          left.name.localeCompare(right.name, "id-ID")
+        );
+      });
+      setCategoryId(createdCategory.id);
+      setCategoryFeedback({ success: true, message: result.message });
+      setNewCategoryName("");
+
+      window.setTimeout(() => {
+        setIsCategoryDialogOpen(false);
+        setCategoryFeedback(null);
+      }, 600);
+    });
+  }
+
+  const hasCategories = categoryOptions.length > 0;
   const parsedPrice = Number(price);
+  const parsedCostPrice = Number(costPrice);
   const parsedStock = Number(stock);
   const numericPrice = Number.isFinite(parsedPrice) && parsedPrice > 0 ? parsedPrice : 0;
+  const numericCostPrice =
+    Number.isFinite(parsedCostPrice) && parsedCostPrice >= 0 ? parsedCostPrice : 0;
   const numericStock = Number.isFinite(parsedStock) && parsedStock >= 0 ? parsedStock : 0;
-  const selectedCategory = categories.find((category) => category.id === categoryId);
+  const selectedCategory = categoryOptions.find((category) => category.id === categoryId);
   const previewTitle = title.trim() || "Judul buku akan muncul di sini";
   const previewAuthor = author.trim() || "Penulis akan tampil di sini";
   const previewDescription =
@@ -195,9 +265,19 @@ export default function BookForm({ categories, book }: BookFormProps) {
               </div>
 
               <div>
-                <label htmlFor="categoryId" className={labelClass}>
-                  Kategori
-                </label>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label htmlFor="categoryId" className="block text-sm font-semibold text-slate-700">
+                    Kategori
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryDialogOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary transition hover:border-primary/30 hover:bg-primary-100"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Tambah cepat
+                  </button>
+                </div>
                 <select
                   id="categoryId"
                   name="categoryId"
@@ -208,12 +288,15 @@ export default function BookForm({ categories, book }: BookFormProps) {
                   disabled={!hasCategories}
                 >
                   <option value="">Pilih kategori</option>
-                  {categories.map((cat) => (
+                  {categoryOptions.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
                   ))}
                 </select>
+                <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                  Flow utama kategori sekarang ada di form ini. Halaman kategori tetap dipakai untuk maintenance lanjutan.
+                </p>
               </div>
             </div>
           </section>
@@ -226,7 +309,7 @@ export default function BookForm({ categories, book }: BookFormProps) {
               </p>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-3">
               <div>
                 <label htmlFor="price" className={labelClass}>
                   Harga (Rp)
@@ -241,6 +324,23 @@ export default function BookForm({ categories, book }: BookFormProps) {
                   onChange={(event) => setPrice(event.target.value)}
                   className={inputClass}
                   placeholder="50000"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="costPrice" className={labelClass}>
+                  Harga Modal (Rp)
+                </label>
+                <input
+                  id="costPrice"
+                  name="costPrice"
+                  type="number"
+                  min={0}
+                  required
+                  value={costPrice}
+                  onChange={(event) => setCostPrice(event.target.value)}
+                  className={inputClass}
+                  placeholder="30000"
                 />
               </div>
 
@@ -260,6 +360,10 @@ export default function BookForm({ categories, book }: BookFormProps) {
                   placeholder="10"
                 />
               </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600">
+              Margin kotor estimasi per unit saat ini: Rp {Math.max(numericPrice - numericCostPrice, 0).toLocaleString("id-ID")}. Nilai ini dipakai untuk ringkasan laporan keuangan admin.
             </div>
           </section>
 
@@ -410,6 +514,16 @@ export default function BookForm({ categories, book }: BookFormProps) {
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
                 <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  <Banknote className="h-3.5 w-3.5 text-primary" />
+                  Modal
+                </div>
+                <p className="mt-2 text-base font-bold text-slate-900">
+                  Rp {numericCostPrice.toLocaleString("id-ID")}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
+                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                   <FolderOpen className="h-3.5 w-3.5 text-primary" />
                   Kategori
                 </div>
@@ -447,6 +561,82 @@ export default function BookForm({ categories, book }: BookFormProps) {
           </div>
         </article>
       </aside>
+
+      {isMounted && isCategoryDialogOpen ? createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_30px_90px_-54px_rgba(15,23,42,0.75)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                  Quick Category
+                </p>
+                <h3 className="mt-2 text-xl font-bold tracking-[-0.03em] text-slate-900">
+                  Tambah kategori tanpa pindah halaman
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                  Kategori baru akan langsung masuk ke daftar dan otomatis terpilih pada form buku ini.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeCategoryDialog}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCategory} className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="newCategoryName" className={labelClass}>
+                  Nama kategori baru
+                </label>
+                <input
+                  id="newCategoryName"
+                  type="text"
+                  required
+                  value={newCategoryName}
+                  onChange={(event) => setNewCategoryName(event.target.value)}
+                  className={inputClass}
+                  placeholder="Contoh: Bisnis dan Karier"
+                />
+              </div>
+
+              {categoryFeedback ? (
+                <div
+                  className={`rounded-2xl border px-4 py-3 text-sm ${
+                    categoryFeedback.success
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-red-200 bg-red-50 text-red-700"
+                  }`}
+                >
+                  {categoryFeedback.message}
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={closeCategoryDialog}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreatingCategory}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isCreatingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Simpan kategori
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      ) : null}
     </div>
   );
 }

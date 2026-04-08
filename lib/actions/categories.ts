@@ -4,6 +4,25 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 
+type CategoryActionState = {
+  success: boolean;
+  message: string;
+  category?: {
+    id: string;
+    name: string;
+  };
+};
+
+function normalizeCategoryName(value: string) {
+  return value.trim();
+}
+
+async function revalidateCategoryPaths() {
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/books");
+  revalidatePath("/admin/books/new");
+}
+
 /**
  * Menambahkan kategori buku baru.
  *
@@ -14,32 +33,69 @@ import { requireAdmin } from "@/lib/auth";
 export async function createCategory(
   _prevState: unknown,
   formData: FormData
-): Promise<{ success: boolean; message: string }> {
+): Promise<CategoryActionState> {
   await requireAdmin();
 
-  const name = formData.get("name") as string;
+  const name = normalizeCategoryName(String(formData.get("name") ?? ""));
 
-  if (!name || name.trim() === "") {
+  if (!name) {
     return { success: false, message: "Nama kategori tidak boleh kosong." };
   }
 
   try {
     const existing = await prisma.category.findUnique({
-      where: { name: name.trim() },
+      where: { name },
     });
 
     if (existing) {
       return { success: false, message: "Nama kategori sudah digunakan." };
     }
 
-    await prisma.category.create({
-      data: { name: name.trim() },
+    const category = await prisma.category.create({
+      data: { name },
+      select: { id: true, name: true },
     });
 
-    revalidatePath("/admin/categories");
-    return { success: true, message: "Kategori berhasil ditambahkan." };
+    await revalidateCategoryPaths();
+    return { success: true, message: "Kategori berhasil ditambahkan.", category };
   } catch (error) {
     console.error("Gagal menambah kategori:", error);
+    return { success: false, message: "Terjadi kesalahan sistem." };
+  }
+}
+
+export async function createCategoryInline(name: string): Promise<CategoryActionState> {
+  await requireAdmin();
+
+  const normalizedName = normalizeCategoryName(name);
+
+  if (!normalizedName) {
+    return { success: false, message: "Nama kategori tidak boleh kosong." };
+  }
+
+  try {
+    const existing = await prisma.category.findUnique({
+      where: { name: normalizedName },
+      select: { id: true, name: true },
+    });
+
+    if (existing) {
+      return {
+        success: false,
+        message: "Nama kategori sudah digunakan.",
+        category: existing,
+      };
+    }
+
+    const category = await prisma.category.create({
+      data: { name: normalizedName },
+      select: { id: true, name: true },
+    });
+
+    await revalidateCategoryPaths();
+    return { success: true, message: "Kategori baru siap dipakai.", category };
+  } catch (error) {
+    console.error("Gagal menambah kategori inline:", error);
     return { success: false, message: "Terjadi kesalahan sistem." };
   }
 }
@@ -56,31 +112,32 @@ export async function updateCategory(
   id: string,
   _prevState: unknown,
   formData: FormData
-): Promise<{ success: boolean; message: string }> {
+): Promise<CategoryActionState> {
   await requireAdmin();
 
-  const name = formData.get("name") as string;
+  const name = normalizeCategoryName(String(formData.get("name") ?? ""));
 
-  if (!name || name.trim() === "") {
+  if (!name) {
     return { success: false, message: "Nama kategori tidak boleh kosong." };
   }
 
   try {
     const existing = await prisma.category.findFirst({
-      where: { name: name.trim(), NOT: { id } },
+      where: { name, NOT: { id } },
     });
 
     if (existing) {
       return { success: false, message: "Nama kategori sudah digunakan." };
     }
 
-    await prisma.category.update({
+    const category = await prisma.category.update({
       where: { id },
-      data: { name: name.trim() },
+      data: { name },
+      select: { id: true, name: true },
     });
 
-    revalidatePath("/admin/categories");
-    return { success: true, message: "Kategori berhasil diperbarui." };
+    await revalidateCategoryPaths();
+    return { success: true, message: "Kategori berhasil diperbarui.", category };
   } catch (error) {
     console.error("Gagal memperbarui kategori:", error);
     return { success: false, message: "Terjadi kesalahan sistem." };
@@ -96,8 +153,24 @@ export async function deleteCategory(id: string) {
   await requireAdmin();
 
   try {
+    const category = await prisma.category.findUnique({
+      where: { id },
+      select: { _count: { select: { books: true } } },
+    });
+
+    if (!category) {
+      return { success: false, message: "Kategori tidak ditemukan." };
+    }
+
+    if (category._count.books > 0) {
+      return {
+        success: false,
+        message: "Kategori masih dipakai buku. Pindahkan atau ubah kategori buku terlebih dulu.",
+      };
+    }
+
     await prisma.category.delete({ where: { id } });
-    revalidatePath("/admin/categories");
+    await revalidateCategoryPaths();
     return { success: true, message: "Kategori berhasil dihapus." };
   } catch (error) {
     console.error("Gagal menghapus kategori:", error);

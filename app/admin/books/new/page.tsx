@@ -30,7 +30,8 @@ export default async function NewBookPage() {
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
               Buat entri katalog baru dengan tampilan yang lebih rapi, metadata yang jelas,
-              dan preview cover sebelum buku dipublikasikan ke etalase Erlangmedia.
+              dan preview cover sebelum buku dipublikasikan ke etalase Erlangmedia. Jika kategori
+              yang dibutuhkan belum ada, admin bisa menambahkannya langsung dari form buku.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-2.5">
@@ -46,7 +47,7 @@ export default async function NewBookPage() {
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-primary-dark"
               >
                 <FolderOpen className="h-4 w-4" />
-                Kelola Kategori
+                Kelola Kategori Lanjutan
               </Link>
             </div>
           </div>
@@ -81,7 +82,7 @@ export default async function NewBookPage() {
               <p className="mt-1 text-xs text-slate-600">
                 {categoryCount > 0
                   ? "Lengkapi form lalu simpan untuk menambah buku ke katalog."
-                  : "Buat kategori dulu agar buku bisa dikelompokkan dengan benar."}
+                  : "Tambah kategori cepat dari form buku, lalu lanjutkan simpan katalog."}
               </p>
             </article>
           </div>
@@ -97,8 +98,8 @@ export default async function NewBookPage() {
             <div>
               <h2 className="text-sm font-semibold text-amber-900">Kategori belum tersedia</h2>
               <p className="mt-1 text-sm leading-relaxed text-amber-800/90">
-                Form tetap bisa Anda lihat, tetapi penyimpanan buku baru akan lebih lancar setelah
-                minimal satu kategori dibuat.
+                Gunakan tombol tambah cepat di field kategori untuk membuat kategori pertama tanpa
+                keluar dari halaman ini.
               </p>
             </div>
           </div>

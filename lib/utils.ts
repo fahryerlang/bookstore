@@ -26,3 +26,23 @@ export function formatDate(date: Date | string): string {
     year: "numeric",
   }).format(new Date(date));
 }
+
+/**
+ * Memformat tanggal dan waktu menjadi format Indonesia.
+ *
+ * @param {Date | string | null | undefined} date - Tanggal yang akan diformat.
+ * @returns {string} String terformat, contoh: "2 Januari 2024, 14.30"
+ */
+export function formatDateTime(date: Date | string | null | undefined): string {
+  if (!date) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
+}
