@@ -14,6 +14,9 @@ import {
   ShoppingBag,
   Truck,
 } from "@/components/icons";
+import Pagination from "@/components/Pagination";
+
+const ORDERS_PER_PAGE = 5;
 
 const statusLabels: Record<string, string> = {
   PENDING_PAYMENT: "Menunggu Pembayaran",
@@ -29,17 +32,31 @@ const statusTone: Record<string, string> = {
   COMPLETED: "border border-emerald-200 bg-emerald-50 text-emerald-700",
 };
 
-export default async function UserOrderHistoryPage() {
+interface UserOrderHistoryPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function UserOrderHistoryPage({ searchParams }: UserOrderHistoryPageProps) {
   const session = await requireAuth();
 
   if (session.role === "ADMIN") {
     redirect("/admin/orders");
   }
 
-  const [orders, completedAmount] = await Promise.all([
+  const { page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page ?? "1", 10) || 1);
+
+  const [orders, totalCount, allOrders, completedAmount] = await Promise.all([
     prisma.order.findMany({
       where: { userId: session.id },
       orderBy: { createdAt: "desc" },
+      skip: (currentPage - 1) * ORDERS_PER_PAGE,
+      take: ORDERS_PER_PAGE,
+    }),
+    prisma.order.count({ where: { userId: session.id } }),
+    prisma.order.findMany({
+      where: { userId: session.id },
+      select: { status: true },
     }),
     prisma.order.aggregate({
       where: { userId: session.id, status: "COMPLETED" },
@@ -47,10 +64,16 @@ export default async function UserOrderHistoryPage() {
     }),
   ]);
 
-  const activeOrderCount = orders.filter((order) =>
+  const totalPages = Math.ceil(totalCount / ORDERS_PER_PAGE);
+
+  function buildPageHref(p: number) {
+    return p > 1 ? `/dashboard/orders?page=${p}` : "/dashboard/orders";
+  }
+
+  const activeOrderCount = allOrders.filter((order) =>
     ["PENDING_PAYMENT", "PROCESSING", "SHIPPED"].includes(order.status)
   ).length;
-  const completedOrderCount = orders.filter((order) => order.status === "COMPLETED").length;
+  const completedOrderCount = allOrders.filter((order) => order.status === "COMPLETED").length;
   const totalSpent = completedAmount._sum.totalAmount ?? 0;
 
   return (
@@ -93,7 +116,7 @@ export default async function UserOrderHistoryPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                 Total Pesanan
               </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{orders.length}</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{totalCount}</p>
             </article>
             <article className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-700">
@@ -269,6 +292,14 @@ export default async function UserOrderHistoryPage() {
                   </Link>
 
                   <Link
+                    href={`/dashboard/orders/${order.id}/track`}
+                    className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:bg-primary hover:text-white"
+                  >
+                    Lacak Pesanan
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+
+                  <Link
                     href={`/checkout/success?order=${order.id}`}
                     className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary hover:text-primary"
                   >
@@ -301,7 +332,7 @@ export default async function UserOrderHistoryPage() {
               Pending Review
             </p>
             <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-slate-900">
-              {orders.filter((order) => order.status === "PENDING_PAYMENT").length}
+              {allOrders.filter((order) => order.status === "PENDING_PAYMENT").length}
             </p>
             <p className="mt-2 text-sm text-slate-500">Pesanan yang masih menunggu pembayaran.</p>
           </article>
@@ -311,7 +342,7 @@ export default async function UserOrderHistoryPage() {
               Sedang Dikirim
             </p>
             <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-slate-900">
-              {orders.filter((order) => order.status === "SHIPPED").length}
+              {allOrders.filter((order) => order.status === "SHIPPED").length}
             </p>
             <p className="mt-2 text-sm text-slate-500">Order yang sudah masuk tahap distribusi.</p>
           </article>
@@ -327,6 +358,10 @@ export default async function UserOrderHistoryPage() {
           </article>
         </section>
       ) : null}
+
+      {totalPages > 1 && (
+        <Pagination currentPage={currentPage} totalPages={totalPages} buildHref={buildPageHref} />
+      )}
     </div>
   );
 }

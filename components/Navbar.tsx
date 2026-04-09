@@ -5,9 +5,22 @@ import { ShoppingCart, User, LogOut, Menu, X } from "@/components/icons";
 import { useState } from "react";
 import { logoutUser } from "@/lib/actions/auth";
 import BrandLogo from "@/components/BrandLogo";
+import NotificationBell from "@/components/NotificationBell";
+
+interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  data: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
 
 interface NavbarProps {
   user: { id: string; name: string; email: string; role: string } | null;
+  notifications?: NotificationItem[];
+  unreadNotificationCount?: number;
 }
 
 const desktopLinks = [
@@ -24,7 +37,7 @@ const mobileLinks = [
   { href: "/contact", label: "Hubungi Kami" },
 ];
 
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar({ user, notifications = [], unreadNotificationCount = 0 }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const visibleDesktopLinks = user
     ? desktopLinks.filter((link) => link.href !== "/#katalog")
@@ -70,6 +83,13 @@ export default function Navbar({ user }: NavbarProps) {
                 >
                   <ShoppingCart className="h-5 w-5" />
                 </Link>
+
+                {user.role !== "ADMIN" && (
+                  <NotificationBell
+                    notifications={notifications}
+                    unreadCount={unreadNotificationCount}
+                  />
+                )}
 
                 <div className="ml-1 flex items-center gap-2">
                   <Link

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { formatRupiah } from "@/lib/utils";
-import { ShoppingCart } from "@/components/icons";
+import { ShoppingCart, Star } from "@/components/icons";
 
 /**
  * Props untuk komponen BookCard.
@@ -14,6 +14,8 @@ interface BookCardProps {
   imageUrl: string;
   category: string;
   stock: number;
+  avgRating?: number;
+  reviewCount?: number;
 }
 
 /**
@@ -27,6 +29,8 @@ export default function BookCard({
   imageUrl,
   category,
   stock,
+  avgRating,
+  reviewCount,
 }: BookCardProps) {
   return (
     <Link href={`/books/${id}`} className="group">
@@ -61,6 +65,15 @@ export default function BookCard({
           <p className="mt-1 text-xs font-medium text-slate-500">
             {author ? `Oleh ${author}` : "Penulis belum diisi"}
           </p>
+          {avgRating !== undefined && avgRating > 0 && (
+            <div className="mt-1.5 flex items-center gap-1">
+              <Star className="h-3.5 w-3.5 text-amber-400" style={{ fill: "currentColor" }} />
+              <span className="text-xs font-semibold text-slate-700">{avgRating.toFixed(1)}</span>
+              {reviewCount !== undefined && reviewCount > 0 && (
+                <span className="text-[10px] text-slate-400">({reviewCount})</span>
+              )}
+            </div>
+          )}
           <div className="mt-3 flex items-center justify-between">
             <p className="text-base font-bold text-slate-900">
               {formatRupiah(price)}

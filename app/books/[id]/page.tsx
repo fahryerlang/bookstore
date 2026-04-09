@@ -17,6 +17,8 @@ import {
 } from "@/components/icons";
 import Link from "next/link";
 import AddToCartButton from "./AddToCartButton";
+import WishlistButton from "@/components/WishlistButton";
+import ReviewForm from "@/components/ReviewForm";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BookCard from "@/components/BookCard";
@@ -51,15 +53,66 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 
   if (!book) notFound();
 
-  const relatedBooks = await prisma.book.findMany({
-    where: {
-      categoryId: book.categoryId,
-      NOT: { id: book.id },
-    },
-    include: { category: true },
-    orderBy: { createdAt: "desc" },
-    take: 4,
-  });
+  const [relatedBooks, reviews, reviewAgg, wishlistEntry, reviewableOrders] = await Promise.all([
+    prisma.book.findMany({
+      where: {
+        categoryId: book.categoryId,
+        NOT: { id: book.id },
+      },
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+    }),
+    prisma.review.findMany({
+      where: { bookId: id },
+      include: { user: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    prisma.review.aggregate({
+      where: { bookId: id },
+      _avg: { rating: true },
+      _count: { rating: true },
+    }),
+    user
+      ? prisma.wishlist.findUnique({
+          where: { userId_bookId: { userId: user.id, bookId: id } },
+        })
+      : null,
+    user
+      ? prisma.order.findMany({
+          where: {
+            userId: user.id,
+            status: "COMPLETED",
+            items: { some: { bookId: id } },
+          },
+          select: {
+            id: true,
+            orderNumber: true,
+            items: {
+              where: { bookId: id },
+              select: { id: true },
+            },
+          },
+        })
+      : [],
+  ]);
+
+  const avgRating = reviewAgg._avg.rating ?? 0;
+  const reviewCount = reviewAgg._count.rating;
+  const isWishlisted = !!wishlistEntry;
+
+  // Find orders that haven't been reviewed yet for this book
+  const existingReviews = user
+    ? await prisma.review.findMany({
+        where: { userId: user.id, bookId: id },
+        select: { orderId: true },
+      })
+    : [];
+  const reviewedOrderIds = new Set(existingReviews.map((r) => r.orderId));
+  const unreviewedOrders = (reviewableOrders ?? []).filter(
+    (order) => !reviewedOrderIds.has(order.id)
+  );
 
   const backHref = user
     ? user.role === "ADMIN"
@@ -216,8 +269,22 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                     <p className="mt-2 text-[clamp(2rem,4vw,3rem)] font-black leading-none tracking-[-0.05em] text-slate-900">
                       {formatRupiah(book.price)}
                     </p>
+                    {reviewCount > 0 && (
+                      <div className="mt-3 flex items-center gap-1.5">
+                        <Star className="h-4 w-4 text-amber-400" style={{ fill: "currentColor" }} />
+                        <span className="text-sm font-bold text-slate-900">{avgRating.toFixed(1)}</span>
+                        <span className="text-xs text-slate-500">({reviewCount} ulasan)</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* Wishlist Button */}
+                {user && user.role !== "ADMIN" && (
+                  <div className="mt-4">
+                    <WishlistButton bookId={book.id} isWishlisted={isWishlisted} />
+                  </div>
+                )}
 
                 <div className="mt-6 flex flex-wrap gap-2">
                   <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700">
@@ -412,6 +479,98 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                 </div>
               </section>
             ) : null}
+
+            {/* Reviews Section */}
+            <section className="space-y-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+                  Reviews
+                </p>
+                <h2 className="mt-2 text-[clamp(1.8rem,4vw,3rem)] font-black leading-[1.02] tracking-[-0.03em] text-slate-900">
+                  Ulasan Pembaca
+                </h2>
+                {reviewCount > 0 && (
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-5 w-5 ${star <= Math.round(avgRating) ? "text-amber-400" : "text-slate-200"}`}
+                          style={star <= Math.round(avgRating) ? { fill: "currentColor" } : undefined}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-lg font-bold text-slate-900">{avgRating.toFixed(1)}</span>
+                    <span className="text-sm text-slate-500">dari {reviewCount} ulasan</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Write Review Form - only for users who completed an order with this book */}
+              {unreviewedOrders.length > 0 && (
+                <div className="space-y-4">
+                  {unreviewedOrders.map((order) => (
+                    <article
+                      key={order.id}
+                      className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.22)]"
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary mb-4">
+                        Tulis Review — Pesanan {order.orderNumber ?? order.id.slice(0, 8)}
+                      </p>
+                      <ReviewForm bookId={book.id} orderId={order.id} />
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              {/* Reviews List */}
+              {reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <article
+                      key={review.id}
+                      className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.22)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-50 text-primary">
+                            <User className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">{review.user.name}</p>
+                            <p className="text-xs text-slate-500">
+                              {new Date(review.createdAt).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-4 w-4 ${star <= review.rating ? "text-amber-400" : "text-slate-200"}`}
+                              style={star <= review.rating ? { fill: "currentColor" } : undefined}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="mt-3 text-sm leading-relaxed text-slate-600">{review.comment}</p>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[24px] border border-slate-200 bg-white p-8 text-center">
+                  <Star className="mx-auto h-10 w-10 text-slate-300" />
+                  <p className="mt-3 font-medium text-slate-700">Belum ada ulasan</p>
+                  <p className="mt-1 text-sm text-slate-500">Jadilah yang pertama memberikan ulasan untuk buku ini.</p>
+                </div>
+              )}
+            </section>
           </div>
         </main>
 

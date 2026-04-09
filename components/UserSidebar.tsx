@@ -6,6 +6,7 @@ import BrandLogo from "@/components/BrandLogo";
 import {
   BookOpen,
   CreditCard,
+  Heart,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -25,6 +26,7 @@ interface UserSidebarProps {
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/books", label: "Katalog Buku", icon: BookOpen },
+  { href: "/dashboard/wishlist", label: "Wishlist", icon: Heart },
   { href: "/dashboard/orders", label: "Riwayat Belanja", icon: ShoppingBag },
   { href: "/dashboard/profile", label: "Profil", icon: User },
   { href: "/cart", label: "Keranjang", icon: ShoppingCart },

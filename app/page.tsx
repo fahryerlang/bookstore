@@ -144,7 +144,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         }),
         ...(category && { categoryId: category }),
       },
-      include: { category: true },
+      include: { category: true, reviews: { select: { rating: true } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
@@ -778,7 +778,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               </div>
             ) : (
               <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {books.map((book) => (
+                {books.map((book) => {
+                  const avg = book.reviews.length > 0 ? book.reviews.reduce((s, r) => s + r.rating, 0) / book.reviews.length : 0;
+                  return (
                   <BookCard
                     key={book.id}
                     id={book.id}
@@ -788,8 +790,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                     imageUrl={book.imageUrl}
                     category={book.category.name}
                     stock={book.stock}
+                    avgRating={avg}
+                    reviewCount={book.reviews.length}
                   />
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

@@ -16,6 +16,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { requireAuth, requireAdmin } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { createOrderStatusNotification } from "@/lib/actions/notifications";
 
 function getStatusUpdateTimestamp() {
   return new Date();
@@ -303,6 +304,8 @@ export async function updateOrderStatus(
         status: true,
         paymentStatus: true,
         paymentMethodId: true,
+        userId: true,
+        orderNumber: true,
       },
     });
 
@@ -380,9 +383,22 @@ export async function updateOrderStatus(
       }
     });
 
+    // Create notification for user
+    try {
+      await createOrderStatusNotification(
+        existingOrder.userId,
+        orderId,
+        existingOrder.orderNumber,
+        status
+      );
+    } catch {
+      // Non-critical: don't fail the status update if notification fails
+    }
+
     revalidatePath("/admin/orders");
     revalidatePath("/admin/reports");
     revalidatePath("/dashboard/orders");
+    revalidatePath(`/dashboard/orders/${orderId}/track`);
     revalidatePath(`/admin/orders/${orderId}/invoice`);
     revalidatePath(`/dashboard/orders/${orderId}/invoice`);
     return { success: true, message: "Status pesanan diperbarui." };

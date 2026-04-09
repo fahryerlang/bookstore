@@ -12,6 +12,7 @@ export const ArrowLeft = createIcon("lucide:arrow-left");
 export const ArrowRight = createIcon("lucide:arrow-right");
 export const Award = createIcon("lucide:award");
 export const Banknote = createIcon("lucide:banknote");
+export const Bell = createIcon("lucide:bell");
 export const BookOpen = createIcon("lucide:book-open");
 export const CheckCircle = createIcon("lucide:check-circle");
 export const ChevronDown = createIcon("lucide:chevron-down");

@@ -2,29 +2,52 @@ import Image from "next/image";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { formatRupiah } from "@/lib/utils";
-import { BookOpen, Sparkles } from "@/components/icons";
+import { BookOpen, Sparkles, Star } from "@/components/icons";
 import DashboardBooksFilters from "@/components/DashboardBooksFilters";
+import Pagination from "@/components/Pagination";
+
+const BOOKS_PER_PAGE = 12;
 
 interface UserBooksPageProps {
-  searchParams: Promise<{ q?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; page?: string }>;
 }
 
 export default async function UserBooksPage({ searchParams }: UserBooksPageProps) {
-  const { q, category } = await searchParams;
+  const { q, category, page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page ?? "1", 10) || 1);
 
-  const [books, categories] = await Promise.all([
-    prisma.book.findMany({
-      where: {
-        ...(q && {
-          OR: [{ title: { contains: q } }, { author: { contains: q } }],
-        }),
-        ...(category && { categoryId: category }),
-      },
-      include: { category: true },
-      orderBy: { createdAt: "desc" },
+  const where = {
+    ...(q && {
+      OR: [{ title: { contains: q } }, { author: { contains: q } }],
     }),
+    ...(category && { categoryId: category }),
+  };
+
+  const [books, totalCount, categories] = await Promise.all([
+    prisma.book.findMany({
+      where,
+      include: {
+        category: true,
+        reviews: { select: { rating: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (currentPage - 1) * BOOKS_PER_PAGE,
+      take: BOOKS_PER_PAGE,
+    }),
+    prisma.book.count({ where }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
   ]);
+
+  const totalPages = Math.ceil(totalCount / BOOKS_PER_PAGE);
+
+  function buildPageHref(p: number) {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (category) params.set("category", category);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return qs ? `/dashboard/books?${qs}` : "/dashboard/books";
+  }
 
   return (
     <div className="space-y-6">
@@ -44,7 +67,7 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
 
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-900">
             <Sparkles className="h-3.5 w-3.5" />
-            {books.length} buku ditemukan
+            {totalCount} buku ditemukan
           </div>
         </div>
 
@@ -92,6 +115,17 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
                     {book.description}
                   </p>
 
+                  {(() => {
+                    const avg = book.reviews.length > 0 ? book.reviews.reduce((s, r) => s + r.rating, 0) / book.reviews.length : 0;
+                    return avg > 0 ? (
+                      <div className="mt-2 flex items-center gap-1 text-xs text-amber-600">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        <span className="font-semibold">{avg.toFixed(1)}</span>
+                        <span className="text-slate-400">({book.reviews.length})</span>
+                      </div>
+                    ) : null;
+                  })()}
+
                   <div className="mt-4 flex items-end justify-between gap-3">
                     <div>
                       <p className="text-lg font-bold text-slate-900">{formatRupiah(book.price)}</p>
@@ -117,6 +151,10 @@ export default async function UserBooksPage({ searchParams }: UserBooksPageProps
           </div>
         )}
       </section>
+
+      {totalPages > 1 && (
+        <Pagination currentPage={currentPage} totalPages={totalPages} buildHref={buildPageHref} />
+      )}
     </div>
   );
 }

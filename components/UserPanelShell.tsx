@@ -1,10 +1,12 @@
 import Link from "next/link";
 import UserSidebar from "@/components/UserSidebar";
-import { Clock, Sparkles, User } from "@/components/icons";
+import NotificationBell from "@/components/NotificationBell";
+import { Clock, Heart, ShoppingCart, Sparkles, User } from "@/components/icons";
 
 const mobileNavItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/books", label: "Buku" },
+  { href: "/dashboard/wishlist", label: "Wishlist" },
   { href: "/dashboard/orders", label: "Riwayat" },
   { href: "/dashboard/profile", label: "Profil" },
   { href: "/cart", label: "Keranjang" },
@@ -12,15 +14,27 @@ const mobileNavItems = [
   { href: "/contact", label: "Bantuan" },
 ];
 
+interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  data: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
 interface UserPanelShellProps {
   user: {
     name: string;
     email: string;
   };
+  notifications?: NotificationItem[];
+  unreadNotificationCount?: number;
   children: React.ReactNode;
 }
 
-export default function UserPanelShell({ user, children }: UserPanelShellProps) {
+export default function UserPanelShell({ user, notifications = [], unreadNotificationCount = 0, children }: UserPanelShellProps) {
   return (
     <div className="flex h-screen gap-4 overflow-hidden bg-grid-soft bg-[radial-gradient(circle_at_top,_#edf5ff_0%,_#f8fbff_32%,_#ffffff_68%)] p-3 sm:p-4">
       <UserSidebar user={user} />
@@ -58,11 +72,23 @@ export default function UserPanelShell({ user, children }: UserPanelShellProps) 
               Jelajah Buku
             </Link>
             <Link
-              href="/cart"
-              className="inline-flex items-center rounded-xl border border-slate-200 bg-white/92 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
+              href="/dashboard/wishlist"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/92 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
             >
+              <Heart className="h-3.5 w-3.5" />
+              Wishlist
+            </Link>
+            <Link
+              href="/cart"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/92 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-primary/35 hover:text-primary"
+            >
+              <ShoppingCart className="h-3.5 w-3.5" />
               Keranjang
             </Link>
+            <NotificationBell
+              notifications={notifications}
+              unreadCount={unreadNotificationCount}
+            />
           </div>
 
           <Link
