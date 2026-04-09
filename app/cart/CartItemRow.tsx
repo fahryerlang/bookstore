@@ -1,7 +1,7 @@
 "use client";
 
+import BookCoverImage from "@/components/BookCoverImage";
 import { Minus, Plus, Trash2, Loader2 } from "@/components/icons";
-import Image from "next/image";
 import { updateCartItem, removeFromCart } from "@/lib/actions/cart";
 import { formatRupiah } from "@/lib/utils";
 import { useTransition } from "react";
@@ -74,7 +74,7 @@ export default function CartItemRow({
       </div>
 
       <div className="relative h-28 w-20 overflow-hidden rounded-[20px] border border-slate-200 bg-slate-100 shadow-inner">
-        <Image
+        <BookCoverImage
           src={imageUrl}
           alt={title}
           fill

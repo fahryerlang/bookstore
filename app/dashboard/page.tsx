@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { formatDate, formatRupiah } from "@/lib/utils";
-import Image from "next/image";
+import BookCoverImage from "@/components/BookCoverImage";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -382,7 +382,7 @@ export default async function UserDashboardPage() {
                 className="group flex w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-44px_rgba(15,23,42,0.65)] transition duration-200 hover:-translate-y-1 hover:border-primary/30 sm:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.75rem)]"
               >
                 <div className="relative aspect-[5/4] overflow-hidden border-b border-slate-200 bg-slate-100">
-                  <Image
+                  <BookCoverImage
                     src={book.imageUrl}
                     alt={book.title}
                     fill

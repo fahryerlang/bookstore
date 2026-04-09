@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import BookCoverImage from "@/components/BookCoverImage";
 import { formatRupiah } from "@/lib/utils";
 import { ShoppingCart, Star } from "@/components/icons";
 
@@ -37,7 +37,7 @@ export default function BookCard({
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_36px_-30px_rgba(15,23,42,0.85)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_24px_56px_-34px_rgba(15,23,42,0.7)]">
         {/* Book Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
-          <Image
+          <BookCoverImage
             src={imageUrl}
             alt={title}
             fill

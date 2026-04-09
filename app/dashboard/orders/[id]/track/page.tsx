@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import BookCoverImage from "@/components/BookCoverImage";
 import { requireAuth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { formatDate, formatDateTime, formatRupiah } from "@/lib/utils";
@@ -396,7 +396,7 @@ export default async function TrackOrderPage({ params }: TrackOrderPageProps) {
                 {/* Book Image */}
                 <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-200">
                   {item.imageUrlSnapshot ? (
-                    <Image
+                    <BookCoverImage
                       src={item.imageUrlSnapshot}
                       alt={item.productTitleSnapshot ?? "Book"}
                       fill

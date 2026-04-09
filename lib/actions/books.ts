@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
+import { isRemoteImageUrl } from "@/lib/image-sources";
 import { randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -101,6 +102,10 @@ async function resolveBookImageSource(
   }
 
   if (imageUrlInput) {
+    if (!isRemoteImageUrl(imageUrlInput)) {
+      return { error: "URL cover harus memakai alamat http/https yang valid." };
+    }
+
     return { imageUrl: imageUrlInput };
   }
 

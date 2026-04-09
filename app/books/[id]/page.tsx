@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import BookCoverImage from "@/components/BookCoverImage";
 import { formatRupiah } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -199,7 +199,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                 <div className="pointer-events-none absolute -right-10 bottom-0 h-52 w-52 rounded-full bg-blue-300/18 blur-3xl animate-drift-slow" />
 
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[28px] border border-white/10 bg-white/5">
-                  <Image
+                  <BookCoverImage
                     src={book.imageUrl}
                     alt={book.title}
                     fill

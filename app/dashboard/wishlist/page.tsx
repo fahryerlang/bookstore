@@ -1,4 +1,4 @@
-import Image from "next/image";
+import BookCoverImage from "@/components/BookCoverImage";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import Pagination from "@/components/Pagination";
@@ -122,7 +122,7 @@ export default async function UserWishlistPage({ searchParams }: UserWishlistPag
                   className="group flex w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-44px_rgba(15,23,42,0.65)] transition duration-200 hover:-translate-y-1 hover:border-primary/30 sm:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.75rem)]"
                 >
                   <div className="relative aspect-[5/4] overflow-hidden border-b border-slate-200 bg-slate-100">
-                    <Image
+                    <BookCoverImage
                       src={item.book.imageUrl}
                       alt={item.book.title}
                       fill

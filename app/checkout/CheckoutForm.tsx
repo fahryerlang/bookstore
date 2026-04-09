@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useActionState, useState } from "react";
+import BookCoverImage from "@/components/BookCoverImage";
 import { createOrder } from "@/lib/actions/orders";
 import { paymentOptions, shippingOptions } from "@/lib/checkout";
 import { formatRupiah } from "@/lib/utils";
@@ -399,7 +399,7 @@ export default function CheckoutForm({
                 className="flex items-start gap-3 rounded-[22px] border border-slate-200 bg-slate-50/85 p-3"
               >
                 <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-[16px] border border-slate-200 bg-white">
-                  <Image
+                  <BookCoverImage
                     src={item.imageUrl}
                     alt={item.title}
                     fill

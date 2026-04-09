@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import Image from "next/image";
+import BookCoverImage from "@/components/BookCoverImage";
 import { BookOpen, Plus, Package } from "@/components/icons";
 import { formatRupiah, formatDate } from "@/lib/utils";
 import Link from "next/link";
@@ -123,7 +123,7 @@ export default async function AdminBooksPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="relative h-12 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-sm">
-                          <Image
+                          <BookCoverImage
                             src={book.imageUrl}
                             alt={book.title}
                             fill
