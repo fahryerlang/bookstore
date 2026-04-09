@@ -1,26 +1,11 @@
-"use client";
-
 import Link from "next/link";
-import { ShoppingCart, User, LogOut, Menu, X } from "@/components/icons";
-import { useState } from "react";
+import { ShoppingCart, User, LogOut, Menu } from "@/components/icons";
 import { logoutUser } from "@/lib/actions/auth";
 import BrandLogo from "@/components/BrandLogo";
-import NotificationBell from "@/components/NotificationBell";
-
-interface NotificationItem {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  data: string | null;
-  isRead: boolean;
-  createdAt: string;
-}
+import DeferredNotificationBell from "@/components/DeferredNotificationBell";
 
 interface NavbarProps {
   user: { id: string; name: string; email: string; role: string } | null;
-  notifications?: NotificationItem[];
-  unreadNotificationCount?: number;
 }
 
 const desktopLinks = [
@@ -37,8 +22,7 @@ const mobileLinks = [
   { href: "/contact", label: "Hubungi Kami" },
 ];
 
-export default function Navbar({ user, notifications = [], unreadNotificationCount = 0 }: NavbarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Navbar({ user }: NavbarProps) {
   const visibleDesktopLinks = user
     ? desktopLinks.filter((link) => link.href !== "/#katalog")
     : desktopLinks;
@@ -50,11 +34,11 @@ export default function Navbar({ user, notifications = [], unreadNotificationCou
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 lg:px-8">
-      <nav className="mx-auto w-full max-w-[min(110rem,calc(100vw-2rem))] rounded-2xl border border-slate-200/90 bg-white/90 shadow-[0_24px_60px_-45px_rgba(15,23,42,0.8)] backdrop-blur-md">
-        <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+      <nav className="mx-auto w-full max-w-[min(110rem,calc(100vw-2rem))] rounded-2xl border border-slate-200/90 bg-white/95 shadow-[0_24px_60px_-45px_rgba(15,23,42,0.8)]">
+        <div className="hidden h-16 items-center justify-between px-4 sm:px-6 md:flex">
           <BrandLogo href="/" tone="dark" size="sm" />
 
-          <div className="hidden items-center gap-1 md:flex">
+          <div className="flex items-center gap-1">
             {visibleDesktopLinks.map((link) => (
               <Link
                 key={link.href}
@@ -66,7 +50,7 @@ export default function Navbar({ user, notifications = [], unreadNotificationCou
             ))}
           </div>
 
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="flex items-center gap-2">
             {user ? (
               <>
                 <Link
@@ -84,12 +68,7 @@ export default function Navbar({ user, notifications = [], unreadNotificationCou
                   <ShoppingCart className="h-5 w-5" />
                 </Link>
 
-                {user.role !== "ADMIN" && (
-                  <NotificationBell
-                    notifications={notifications}
-                    unreadCount={unreadNotificationCount}
-                  />
-                )}
+                {user.role !== "ADMIN" && <DeferredNotificationBell />}
 
                 <div className="ml-1 flex items-center gap-2">
                   <Link
@@ -132,31 +111,23 @@ export default function Navbar({ user, notifications = [], unreadNotificationCou
               </>
             )}
           </div>
-
-          <button
-            type="button"
-            onClick={() => setIsOpen((value) => !value)}
-            aria-expanded={isOpen}
-            aria-label={isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-primary hover:text-primary md:hidden"
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
 
-        <div
-          className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 md:hidden ${
-            isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-          }`}
-        >
-          <div className="overflow-hidden border-t border-slate-200">
+        <details className="md:hidden">
+          <summary className="flex h-16 cursor-pointer list-none items-center justify-between px-4 text-slate-600 sm:px-6 [&::-webkit-details-marker]:hidden">
+            <BrandLogo href="/" tone="dark" size="sm" />
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 transition hover:border-primary hover:text-primary">
+              <Menu className="h-5 w-5" />
+            </span>
+          </summary>
+
+          <div className="border-t border-slate-200">
             <div className="space-y-1 px-4 py-4">
               {visibleMobileLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className="block rounded-xl px-3 py-2.5 text-sm font-semibold uppercase tracking-[0.13em] text-slate-700 transition hover:bg-primary-50 hover:text-primary"
-                  onClick={() => setIsOpen(false)}
                 >
                   {link.label}
                 </Link>
@@ -167,21 +138,18 @@ export default function Navbar({ user, notifications = [], unreadNotificationCou
                   <Link
                     href={dashboardHref}
                     className="block rounded-xl px-3 py-2.5 text-sm font-semibold uppercase tracking-[0.13em] text-slate-700 transition hover:bg-primary-50 hover:text-primary"
-                    onClick={() => setIsOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <Link
                     href={profileHref}
                     className="block rounded-xl px-3 py-2.5 text-sm font-semibold uppercase tracking-[0.13em] text-slate-700 transition hover:bg-primary-50 hover:text-primary"
-                    onClick={() => setIsOpen(false)}
                   >
                     Profil
                   </Link>
                   <Link
                     href="/cart"
                     className="block rounded-xl px-3 py-2.5 text-sm font-semibold uppercase tracking-[0.13em] text-slate-700 transition hover:bg-primary-50 hover:text-primary"
-                    onClick={() => setIsOpen(false)}
                   >
                     Keranjang
                   </Link>
@@ -199,14 +167,12 @@ export default function Navbar({ user, notifications = [], unreadNotificationCou
                   <Link
                     href="/login"
                     className="rounded-xl border border-slate-200 px-3 py-2.5 text-center text-sm font-semibold uppercase tracking-[0.13em] text-slate-700 transition hover:border-primary hover:text-primary"
-                    onClick={() => setIsOpen(false)}
                   >
                     Masuk
                   </Link>
                   <Link
                     href="/register"
                     className="rounded-xl bg-primary px-3 py-2.5 text-center text-sm font-semibold uppercase tracking-[0.13em] text-white transition hover:bg-primary-dark"
-                    onClick={() => setIsOpen(false)}
                   >
                     Daftar
                   </Link>
@@ -214,7 +180,7 @@ export default function Navbar({ user, notifications = [], unreadNotificationCou
               )}
             </div>
           </div>
-        </div>
+        </details>
       </nav>
     </header>
   );

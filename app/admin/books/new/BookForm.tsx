@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useEffect, useState, useSyncExternalStore, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { createBook, updateBook } from "@/lib/actions/books";
 import { createCategoryInline } from "@/lib/actions/categories";
@@ -54,16 +54,16 @@ export default function BookForm({ categories, book }: BookFormProps) {
   const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState("");
   const [selectedCoverName, setSelectedCoverName] = useState("");
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryFeedback, setCategoryFeedback] = useState<{
     success: boolean;
     message: string;
   } | null>(null);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     return () => {

@@ -31,6 +31,9 @@ export default function SearchBar() {
       params.delete("q");
     }
 
+    // Reset pagination whenever the active search term changes.
+    params.delete("page");
+
     if (activeCategory) {
       params.set("category", activeCategory);
     }
@@ -46,9 +49,13 @@ export default function SearchBar() {
       return;
     }
 
-    startTransition(() => {
-      router.replace(nextHref);
-    });
+    const timeoutId = window.setTimeout(() => {
+      startTransition(() => {
+        router.replace(nextHref, { scroll: false });
+      });
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
   }, [nextHref, pathname, router, searchParams]);
 
   return (

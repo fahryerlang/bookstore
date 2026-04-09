@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
@@ -175,6 +175,7 @@ export async function createBook(
     revalidatePath("/dashboard");
     revalidatePath("/admin/reports");
     revalidatePath("/");
+    revalidateTag("books", "max");
     return { success: true, message: "Buku berhasil ditambahkan." };
   } catch (error) {
     if (uploadedImageUrl) {
@@ -269,6 +270,7 @@ export async function updateBook(
     revalidatePath("/admin/reports");
     revalidatePath("/");
     revalidatePath(`/books/${id}`);
+    revalidateTag("books", "max");
     return { success: true, message: "Buku berhasil diperbarui." };
   } catch (error) {
     if (uploadedImageUrl) {
@@ -303,6 +305,7 @@ export async function deleteBook(id: string) {
     revalidatePath("/dashboard");
     revalidatePath("/admin/reports");
     revalidatePath("/");
+    revalidateTag("books", "max");
     return { success: true, message: "Buku berhasil dihapus." };
   } catch (error) {
     console.error("Gagal menghapus buku:", error);

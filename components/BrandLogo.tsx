@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Icon } from "@iconify/react";
+import { LibraryBig } from "lucide-react";
 
 interface BrandLogoProps {
   href?: string;
@@ -40,8 +40,7 @@ export default function BrandLogo({
         } ${markSizeClass}`}
         aria-hidden="true"
       >
-        <Icon
-          icon="lucide:library-big"
+        <LibraryBig
           className={size === "sm" ? "h-4.5 w-4.5" : size === "lg" ? "h-7 w-7" : "h-5 w-5"}
         />
       </span>

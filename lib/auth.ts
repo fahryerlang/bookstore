@@ -6,13 +6,14 @@ import prisma from "@/lib/prisma";
  * Nama cookie untuk menyimpan session ID pengguna.
  */
 const SESSION_COOKIE = "bookstore_session";
+const SESSION_ROLE_COOKIE = "bookstore_role";
 
 /**
  * Mengatur cookie session setelah login berhasil.
  *
  * @param {string} userId - ID pengguna yang login.
  */
-export async function setSession(userId: string) {
+export async function setSession(userId: string, role?: string) {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, userId, {
     httpOnly: true,
@@ -21,6 +22,16 @@ export async function setSession(userId: string) {
     maxAge: 60 * 60 * 24 * 7, // 7 hari
     path: "/",
   });
+
+  if (role) {
+    cookieStore.set(SESSION_ROLE_COOKIE, role, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+  }
 }
 
 /**
@@ -51,6 +62,7 @@ export async function getSession() {
 export async function clearSession() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(SESSION_ROLE_COOKIE);
 }
 
 /**

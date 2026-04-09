@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bell } from "@/components/icons";
 import { markAllNotificationsAsRead, markNotificationAsRead } from "@/lib/actions/notifications";
 import { useState, useRef, useEffect, useTransition } from "react";
@@ -14,11 +15,6 @@ interface NotificationItem {
   createdAt: string;
 }
 
-interface NotificationBellProps {
-  notifications: NotificationItem[];
-  unreadCount: number;
-}
-
 function timeAgo(dateStr: string) {
   const now = new Date();
   const date = new Date(dateStr);
@@ -29,10 +25,31 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(diff / 86400)} hari lalu`;
 }
 
-export default function NotificationBell({ notifications, unreadCount }: NotificationBellProps) {
+async function fetchNotificationSnapshot(includePreview = false) {
+  const response = await fetch(
+    includePreview ? "/api/notifications?include=preview" : "/api/notifications",
+    { cache: "no-store" }
+  );
+
+  if (!response.ok) {
+    throw new Error("Gagal memuat notifikasi.");
+  }
+
+  return response.json() as Promise<{
+    unreadCount: number;
+    notifications?: NotificationItem[];
+  }>;
+}
+
+export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasLoadedPreview, setHasLoadedPreview] = useState(false);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isPending, startTransition] = useTransition();
   const panelRef = useRef<HTMLDivElement>(null);
+  const previewRequestRef = useRef(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -48,15 +65,94 @@ export default function NotificationBell({ notifications, unreadCount }: Notific
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchNotificationSnapshot()
+      .then((data) => {
+        if (isMounted) {
+          setUnreadCount(data.unreadCount);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setUnreadCount(0);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || hasLoadedPreview || !isLoadingPreview || previewRequestRef.current) {
+      return;
+    }
+
+    let isMounted = true;
+    previewRequestRef.current = true;
+
+    fetchNotificationSnapshot(true)
+      .then((data) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setNotifications(data.notifications ?? []);
+        setUnreadCount(data.unreadCount);
+        setHasLoadedPreview(true);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setNotifications([]);
+        setHasLoadedPreview(true);
+      })
+      .finally(() => {
+        previewRequestRef.current = false;
+
+        if (isMounted) {
+          setIsLoadingPreview(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [hasLoadedPreview, isLoadingPreview, isOpen]);
+
+  function handleTogglePanel() {
+    const nextIsOpen = !isOpen;
+
+    if (nextIsOpen && !hasLoadedPreview && !isLoadingPreview) {
+      setIsLoadingPreview(true);
+    }
+
+    setIsOpen(nextIsOpen);
+  }
+
   function handleMarkAllRead() {
     startTransition(async () => {
       await markAllNotificationsAsRead();
+      setNotifications((current) =>
+        current.map((notification) => ({ ...notification, isRead: true }))
+      );
+      setUnreadCount(0);
     });
   }
 
   function handleMarkRead(id: string) {
     startTransition(async () => {
       await markNotificationAsRead(id);
+      setNotifications((current) =>
+        current.map((notification) =>
+          notification.id === id ? { ...notification, isRead: true } : notification
+        )
+      );
+      setUnreadCount((current) => Math.max(0, current - 1));
     });
   }
 
@@ -75,7 +171,7 @@ export default function NotificationBell({ notifications, unreadCount }: Notific
     <div className="relative" ref={panelRef}>
       <button
         type="button"
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={handleTogglePanel}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-primary hover:text-primary"
         aria-label="Notifikasi"
       >
@@ -104,7 +200,11 @@ export default function NotificationBell({ notifications, unreadCount }: Notific
           </div>
 
           <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {isLoadingPreview ? (
+              <div className="px-4 py-8 text-center text-sm text-slate-500">
+                Memuat notifikasi...
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <Bell className="mx-auto h-8 w-8 text-slate-300" />
                 <p className="mt-2 text-sm text-slate-500">Belum ada notifikasi</p>
@@ -128,7 +228,7 @@ export default function NotificationBell({ notifications, unreadCount }: Notific
                         <div className="mt-1.5 flex items-center gap-3">
                           <span className="text-[10px] text-slate-400">{timeAgo(notif.createdAt)}</span>
                           {link && (
-                            <a
+                            <Link
                               href={link}
                               onClick={() => {
                                 setIsOpen(false);
@@ -137,7 +237,7 @@ export default function NotificationBell({ notifications, unreadCount }: Notific
                               className="text-[10px] font-semibold text-primary hover:text-primary-dark"
                             >
                               Lihat detail
-                            </a>
+                            </Link>
                           )}
                           {!notif.isRead && (
                             <button

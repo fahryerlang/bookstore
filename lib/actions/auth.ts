@@ -89,7 +89,7 @@ export async function loginUser(
       return { success: false, message: "Email atau kata sandi salah." };
     }
 
-    await setSession(user.id);
+    await setSession(user.id, user.role);
 
     return {
       success: true,

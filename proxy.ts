@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
  */
 export function proxy(request: NextRequest) {
   const sessionCookie = request.cookies.get("bookstore_session");
+  const sessionRole = request.cookies.get("bookstore_role")?.value;
   const { pathname } = request.nextUrl;
 
   /** Rute yang memerlukan autentikasi */
@@ -29,6 +30,12 @@ export function proxy(request: NextRequest) {
   /** Rute autentikasi (login/register) - redirect jika sudah login */
   const authRoutes = ["/login", "/register"];
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  const authenticatedHome = sessionRole === "ADMIN" ? "/admin" : "/dashboard";
+
+  if (pathname === "/" && sessionCookie) {
+    const dashboardUrl = new URL(authenticatedHome, request.url);
+    return NextResponse.redirect(dashboardUrl);
+  }
 
   if (isProtected && !sessionCookie) {
     const loginUrl = new URL("/login", request.url);
@@ -36,7 +43,7 @@ export function proxy(request: NextRequest) {
   }
 
   if (isAuthRoute && sessionCookie) {
-    const dashboardUrl = new URL("/dashboard", request.url);
+    const dashboardUrl = new URL(authenticatedHome, request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 

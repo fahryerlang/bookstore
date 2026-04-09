@@ -1,12 +1,15 @@
-import prisma from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import BookCard from "@/components/BookCard";
 import SearchBar from "@/components/SearchBar";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { redirect } from "next/navigation";
+import Pagination from "@/components/Pagination";
+import {
+  getCachedHomeCatalogData,
+  HOME_BOOKS_PER_PAGE,
+} from "@/lib/public-home";
 import {
   ArrowRight,
   BookOpen,
@@ -18,7 +21,7 @@ import {
 } from "@/components/icons";
 
 interface HomePageProps {
-  searchParams: Promise<{ q?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; page?: string }>;
 }
 
 const partnerNames = [
@@ -113,7 +116,7 @@ function formatRupiah(value: number) {
   return `Rp ${value.toLocaleString("id-ID")}`;
 }
 
-function buildHomeHref(q?: string, categoryId?: string) {
+function buildHomeHref(q?: string, categoryId?: string, page?: number) {
   const params = new URLSearchParams();
 
   if (q) {
@@ -124,40 +127,37 @@ function buildHomeHref(q?: string, categoryId?: string) {
     params.set("category", categoryId);
   }
 
+  if (page && page > 1) {
+    params.set("page", String(page));
+  }
+
   const queryString = params.toString();
   return queryString ? `/?${queryString}` : "/";
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  const { q, category } = await searchParams;
-  const user = await getSession();
+  const { q, category, page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page ?? "1", 10) || 1);
+  const {
+    books,
+    categories,
+    totalBooks,
+    totalCategories,
+    filteredBookCount,
+    highlightBooks,
+  } = await getCachedHomeCatalogData(q ?? null, category ?? null, currentPage);
 
-  if (user) {
-    redirect(user.role === "ADMIN" ? "/admin" : "/dashboard");
+  const totalPages = Math.ceil(filteredBookCount / HOME_BOOKS_PER_PAGE);
+  const trendingBooks = highlightBooks;
+  const spotlightBook = highlightBooks[0];
+
+  function buildCatalogPageHref(nextPage: number) {
+    return buildHomeHref(q, category, nextPage);
   }
-
-  const [books, categories, totalBooks, totalCategories] = await Promise.all([
-    prisma.book.findMany({
-      where: {
-        ...(q && {
-          OR: [{ title: { contains: q } }, { author: { contains: q } }],
-        }),
-        ...(category && { categoryId: category }),
-      },
-      include: { category: true, reviews: { select: { rating: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
-    prisma.book.count(),
-    prisma.category.count(),
-  ]);
-
-  const trendingBooks = books.slice(0, 5);
-  const spotlightBook = books[0];
 
   return (
     <>
-      <Navbar user={user} />
+      <Navbar user={null} />
 
       <div className="relative flex-1 overflow-hidden bg-grid-soft bg-[radial-gradient(circle_at_top,_#edf5ff_0%,_#f8fbff_32%,_#ffffff_68%)]">
         <div className="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl animate-drift-slow" />
@@ -736,7 +736,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
 
             <div className="max-w-xl">
-              <SearchBar />
+              <Suspense
+                fallback={<div className="h-[54px] w-full rounded-2xl border border-slate-300 bg-white" />}
+              >
+                <SearchBar />
+              </Suspense>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
@@ -777,25 +781,40 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                 </p>
               </div>
             ) : (
-              <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {books.map((book) => {
-                  const avg = book.reviews.length > 0 ? book.reviews.reduce((s, r) => s + r.rating, 0) / book.reviews.length : 0;
-                  return (
-                  <BookCard
-                    key={book.id}
-                    id={book.id}
-                    title={book.title}
-                    author={book.author}
-                    price={book.price}
-                    imageUrl={book.imageUrl}
-                    category={book.category.name}
-                    stock={book.stock}
-                    avgRating={avg}
-                    reviewCount={book.reviews.length}
+              <>
+                <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {books.map((book) => {
+                    const avg =
+                      book.reviews.length > 0
+                        ? book.reviews.reduce((sum, review) => sum + review.rating, 0) /
+                          book.reviews.length
+                        : 0;
+
+                    return (
+                      <BookCard
+                        key={book.id}
+                        id={book.id}
+                        title={book.title}
+                        author={book.author}
+                        price={book.price}
+                        imageUrl={book.imageUrl}
+                        category={book.category.name}
+                        stock={book.stock}
+                        avgRating={avg}
+                        reviewCount={book.reviews.length}
+                      />
+                    );
+                  })}
+                </div>
+
+                {totalPages > 1 ? (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    buildHref={buildCatalogPageHref}
                   />
-                  );
-                })}
-              </div>
+                ) : null}
+              </>
             )}
           </section>
         </main>
